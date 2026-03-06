@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoTrack Admin — Location Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --surface3: #1f2937;
+    --accent: #00ff88;
+    --accent2: #00bfff;
+    --accent3: #ff6b35;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --border: rgba(255,255,255,0.08);
+    --glow: 0 0 20px rgba(0,255,136,0.3);
+    --glow2: 0 0 20px rgba(0,191,255,0.3);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ambient orbs */
+  .orb1, .orb2 {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: floatOrb 8s ease-in-out infinite;
+  }
+  .orb1 {
+    width: 400px; height: 400px;
+    background: rgba(0,255,136,0.07);
+    top: -100px; left: -100px;
+  }
+  .orb2 {
+    width: 300px; height: 300px;
+    background: rgba(0,191,255,0.07);
+    bottom: -50px; right: -50px;
+    animation-delay: -4s;
+  }
+  @keyframes floatOrb {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(30px, 20px); }
+  }
+
+  /* Layout */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    background: rgba(8,12,16,0.8);
+    position: sticky;
+    top: 0;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(0,255,136,0); }
+  }
+  .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text span { color: var(--accent); }
+  .header-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    background: rgba(0,255,136,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,136,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+  .live-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  /* Main grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    padding: 32px 0;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* Panel */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-body { padding: 24px; }
+
+  /* Left column */
+  .left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation-delay: 0.1s;
+  }
+
+  /* Input section */
+  .input-group { display: flex; flex-direction: column; gap: 8px; }
+  .input-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .input-field {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .input-field:focus {
+    border-color: rgba(0,255,136,0.4);
+    box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+    background: var(--surface3);
+  }
+  .input-field::placeholder { color: var(--muted); font-weight: 400; }
+
+  /* Buttons */
+  .btn {
+    padding: 14px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #080c10;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #00ffaa;
+    box-shadow: var(--glow);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid rgba(0,191,255,0.3);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(0,191,255,0.08);
+    border-color: var(--accent2);
+    box-shadow: var(--glow2);
+  }
+  .btn-danger {
+    background: transparent;
+    color: #ff4757;
+    border: 1px solid rgba(255,71,87,0.3);
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 7px;
+    width: auto;
+  }
+  .btn-danger:hover {
+    background: rgba(255,71,87,0.1);
+    border-color: #ff4757;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Status card */
+  .status-card {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid var(--border);
+    min-height: 60px;
+  }
+  .status-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .status-icon.idle { background: rgba(125,133,144,0.15); }
+  .status-icon.loading { background: rgba(0,191,255,0.15); animation: spinSlow 2s linear infinite; }
+  .status-icon.success { background: rgba(0,255,136,0.15); }
+  .status-icon.error { background: rgba(255,71,87,0.15); }
+  @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .status-content { flex: 1; }
+  .status-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .status-title.idle { color: var(--muted); }
+  .status-title.loading { color: var(--accent2); }
+  .status-title.success { color: var(--accent); }
+  .status-title.error { color: #ff4757; }
+  .status-detail {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Coords display */
+  .coords-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .coord-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .coord-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .coord-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .accuracy-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  .accuracy-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .accuracy-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    background: rgba(0,255,136,0.1);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,255,136,0.2);
+  }
+
+  /* Map placeholder / real map */
+  .map-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .map-wrapper {
+    flex: 1;
+    min-height: 400px;
+    background: #0a1628;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #mapFrame {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    border: none;
+  }
+  .map-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+    position: absolute;
+    inset: 0;
+  }
+  .map-empty-icon { font-size: 48px; opacity: 0.3; }
+  .map-empty-text { font-size: 13px; letter-spacing: 1px; }
+  .map-stats {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .map-stat { display: flex; flex-direction: column; gap: 2px; }
+  .map-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .map-stat-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .map-stat-value.green { color: var(--accent); }
+
+  /* Records table */
+  .records-panel {
+    animation: fadeUp 0.6s ease 0.3s both;
+    margin-top: 0;
+  }
+  .records-table { width: 100%; border-collapse: collapse; }
+  .records-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .records-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .records-table tr:last-child td { border-bottom: none; }
+  .records-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .record-name {
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .record-avatar {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #080c10;
+    flex-shrink: 0;
+  }
+  .record-coords {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+  .record-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .record-acc {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+  }
+  .acc-good { color: var(--accent); }
+  .acc-medium { color: #ffa500; }
+  .acc-poor { color: #ff4757; }
+  .empty-records {
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-records-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.3; }
+
+  /* Tag */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .tag-green { background: rgba(0,255,136,0.1); color: var(--accent); border: 1px solid rgba(0,255,136,0.2); }
+  .tag-blue { background: rgba(0,191,255,0.1); color: var(--accent2); border: 1px solid rgba(0,191,255,0.2); }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 280px;
+    animation: toastIn 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .toast.success { border-color: rgba(0,255,136,0.3); }
+  .toast.error { border-color: rgba(255,71,87,0.3); }
+  .toast.info { border-color: rgba(0,191,255,0.3); }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Export bar */
+  .action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .action-bar-left { display: flex; gap: 8px; }
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 8px;
+    width: auto;
+  }
+  .btn-export {
+    background: transparent;
+    border: 1px solid rgba(255,107,53,0.3);
+    color: var(--accent3);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-export:hover {
+    background: rgba(255,107,53,0.1);
+    border-color: var(--accent3);
+  }
+  .btn-clear-all {
+    background: transparent;
+    border: 1px solid rgba(255,71,87,0.2);
+    color: #ff4757;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-clear-all:hover {
+    background: rgba(255,71,87,0.08);
+    border-color: #ff4757;
+  }
+
+  /* Search bar */
+  .search-wrapper {
+    position: relative;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px 9px 36px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s;
+    width: 200px;
+  }
+  .search-input:focus {
+    border-color: rgba(0,255,136,0.3);
+    width: 240px;
+  }
+
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Table wrapper scrollable */
+  .table-scroll { overflow-x: auto; max-height: 340px; overflow-y: auto; }
+
+  /* Row entry animation */
+  .record-row { animation: rowIn 0.4s ease both; }
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* View on map btn */
+  .btn-map {
+    background: transparent;
+    border: 1px solid rgba(0,191,255,0.2);
+    color: var(--accent2);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-map:hover {
+    background: rgba(0,191,255,0.1);
+    border-color: var(--accent2);
+  }
+
+  /* Progress bar for accuracy */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="orb1"></div>
+<div class="orb2"></div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Header -->
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">📡</div>
+        <div class="logo-text">Geo<span>Track</span></div>
+      </div>
+      <div class="header-badge">
+        <span class="live-dot"></span>ADMIN PANEL
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="container">
+  <div class="main-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <!-- Input Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📋 User Registration</span>
+          <span class="tag tag-green">Active</span>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:16px;">
+
+          <div class="input-group">
+            <label class="input-label">Full Name</label>
+            <input type="text" class="input-field" id="nameInput" placeholder="Masukkan nama pengguna..." autocomplete="off" />
+          </div>
+
+          <button class="btn btn-primary" id="detectBtn" onclick="detectLocation()">
+            <span id="detectBtnIcon">📍</span>
+            <span id="detectBtnText">Detect Location</span>
+          </button>
+
+          <button class="btn btn-secondary" id="saveBtn" onclick="saveRecord()" disabled>
+            <span>💾</span>
+            <span>Save to Database</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">⚡ Location Status</span>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:12px;">
+
+          <div class="status-card" id="statusCard">
+            <div class="status-icon idle" id="statusIcon">🌐</div>
+            <div class="status-content">
+              <div class="status-title idle" id="statusTitle">Ready</div>
+              <div class="status-detail" id="statusDetail">Klik "Detect Location" untuk mula</div>
+            </div>
+          </div>
+
+          <!-- Coords -->
+          <div id="coordsSection" style="display:none;">
+            <div class="coords-grid">
+              <div class="coord-box">
+                <div class="coord-label">Latitude</div>
+                <div class="coord-value" id="latVal">—</div>
+              </div>
+              <div class="coord-box">
+                <div class="coord-label">Longitude</div>
+                <div class="coord-value" id="lngVal">—</div>
+              </div>
+            </div>
+            <div class="accuracy-box" style="margin-top:8px;">
+              <span class="accuracy-label">Accuracy Radius</span>
+              <span class="accuracy-badge" id="accVal">— m</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="accBar" style="width:0%"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mini Stats -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📊 Statistics</span>
+        </div>
+        <div class="panel-body">
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-num" id="statTotal">0</div>
+              <div class="stat-lbl">Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statToday">0</div>
+              <div class="stat-lbl">Today</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statAvgAcc">—</div>
+              <div class="stat-lbl">Avg Acc</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- Map Panel -->
+      <div class="map-container">
+        <div class="panel-header">
+          <span class="panel-title">🗺️ Live Map View</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="tag tag-blue" id="mapTag">Idle</span>
+          </div>
+        </div>
+        <div class="map-wrapper" id="mapWrapper">
+          <div class="map-empty" id="mapEmpty">
+            <div class="map-empty-icon">🛰️</div>
+            <div class="map-empty-text">Waiting for coordinates...</div>
+          </div>
+          <iframe id="mapFrame" style="display:none;" allowfullscreen></iframe>
+        </div>
+        <div class="map-stats">
+          <div class="map-stat">
+            <span class="map-stat-label">Coordinates</span>
+            <span class="map-stat-value" id="mapCoordDisplay">—</span>
+          </div>
+          <div class="map-stat">
+            <span class="map-stat-label">Last Updated</span>
+            <span class="map-stat-value" id="mapTimeDisplay">—</span>
+          </div>
+          <div class="map-stat">
+            <span class="map-stat-label">Status</span>
+            <span class="map-stat-value green" id="mapStatusDisplay">IDLE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Records Panel -->
+      <div class="panel records-panel" style="animation-delay:0.3s">
+        <div class="panel-header">
+          <span class="panel-title">🗄️ Saved Records</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="searchInput" placeholder="Cari nama..." oninput="filterRecords()" />
+            </div>
+          </div>
+        </div>
+        <div class="panel-body" style="padding: 0 0 0 0;">
+          <div style="padding:12px 24px 12px;border-bottom:1px solid var(--border);">
+            <div class="action-bar">
+              <div class="action-bar-left">
+                <button class="btn btn-sm btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+                <button class="btn btn-sm btn-export" onclick="exportJSON()" style="border-color:rgba(0,191,255,0.3);color:var(--accent2);">{ } Export JSON</button>
+              </div>
+              <button class="btn btn-sm btn-clear-all" onclick="clearAll()">🗑 Clear All</button>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="records-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Coordinates</th>
+                  <th>Accuracy</th>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody">
+                <tr>
+                  <td colspan="6">
+                    <div class="empty-records">
+                      <div class="empty-records-icon">📭</div>
+                      <div>Belum ada rekod disimpan</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // STATE
+  // ─────────────────────────────────────────────
+  let records = JSON.parse(localStorage.getItem('geotrack_records') || '[]');
+  let currentLocation = null;
+  let isDetecting = false;
+  let searchQuery = '';
+
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
+  function init() {
+    renderRecords();
+    updateStats();
+
+    // Enter key on name input
+    document.getElementById('nameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') detectLocation();
+    });
+
+    // Check geolocation support
+    if (!navigator.geolocation) {
+      setStatus('error', '⚠️', 'Not Supported', 'Browser anda tidak menyokong Geolocation API');
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // DETECT LOCATION
+  // ─────────────────────────────────────────────
+  function detectLocation() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) {
+      toast('error', '⚠️ Sila masukkan nama pengguna dahulu');
+      document.getElementById('nameInput').focus();
+      shakeElement('nameInput');
+      return;
+    }
+
+    if (isDetecting) return;
+    isDetecting = true;
+
+    const btn = document.getElementById('detectBtn');
+    const btnText = document.getElementById('detectBtnText');
+    const btnIcon = document.getElementById('detectBtnIcon');
+    btn.disabled = true;
+    btnText.textContent = 'Detecting...';
+    btnIcon.textContent = '⏳';
+
+    setStatus('loading', '🔄', 'Detecting...', 'Mendapatkan koordinat GPS anda...');
+    document.getElementById('saveBtn').disabled = true;
+    document.getElementById('coordsSection').style.display = 'none';
+    currentLocation = null;
+
+    navigator.geolocation.getCurrentPosition(
+      onSuccess,
+      onError,
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }
+
+  function onSuccess(pos) {
+    isDetecting = false;
+    const { latitude, longitude, accuracy } = pos.coords;
+    currentLocation = { latitude, longitude, accuracy };
+
+    // Update UI
+    const btn = document.getElementById('detectBtn');
+    btn.disabled = false;
+    document.getElementById('detectBtnText').textContent = 'Detect Again';
+    document.getElementById('detectBtnIcon').textContent = '🔄';
+
+    setStatus('success', '✅', 'Location Found!', `±${Math.round(accuracy)}m accuracy radius`);
+
+    document.getElementById('latVal').textContent = latitude.toFixed(6);
+    document.getElementById('lngVal').textContent = longitude.toFixed(6);
+    document.getElementById('accVal').textContent = `±${Math.round(accuracy)}m`;
+    document.getElementById('coordsSection').style.display = 'block';
+
+    // Accuracy bar: 0m=100%, 1000m=0%
+    const pct = Math.max(0, 100 - (accuracy / 10));
+    document.getElementById('accBar').style.width = pct + '%';
+
+    document.getElementById('saveBtn').disabled = false;
+
+    // Show map
+    showMap(latitude, longitude);
+
+    toast('success', `📍 Location detected! Accuracy ±${Math.round(accuracy)}m`);
+  }
+
+  function onError(err) {
+    isDetecting = false;
+    const btn = document.getElementById('detectBtn');
+    btn.disabled = false;
+    document.getElementById('detectBtnText').textContent = 'Detect Location';
+    document.getElementById('detectBtnIcon').textContent = '📍';
+
+    let msg = '';
+    switch(err.code) {
+      case 1: msg = 'Permission ditolak. Sila benarkan akses lokasi di browser.'; break;
+      case 2: msg = 'Lokasi tidak dapat dikesan. Cuba semula.'; break;
+      case 3: msg = 'Timeout — ambil masa terlalu lama. Cuba semula.'; break;
+      default: msg = 'Ralat tidak diketahui.';
+    }
+    setStatus('error', '❌', 'Detection Failed', msg);
+    toast('error', `❌ ${msg}`);
+  }
+
+  // ─────────────────────────────────────────────
+  // MAP
+  // ─────────────────────────────────────────────
+  function showMap(lat, lng) {
+    const frame = document.getElementById('mapFrame');
+    const empty = document.getElementById('mapEmpty');
+    const mapTag = document.getElementById('mapTag');
+
+    frame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}`;
+    frame.style.display = 'block';
+    empty.style.display = 'none';
+    mapTag.textContent = 'Live';
+    mapTag.className = 'tag tag-green';
+
+    document.getElementById('mapCoordDisplay').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    document.getElementById('mapTimeDisplay').textContent = new Date().toLocaleTimeString('ms-MY');
+    document.getElementById('mapStatusDisplay').textContent = 'ACTIVE';
+  }
+
+  function viewOnMap(lat, lng) {
+    showMap(lat, lng);
+    // Scroll to map
+    document.getElementById('mapWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    toast('info', `🗺️ Menunjukkan lokasi: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  }
+
+  // ─────────────────────────────────────────────
+  // SAVE RECORD
+  // ─────────────────────────────────────────────
+  function saveRecord() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name || !currentLocation) return;
+
+    const record = {
+      id: Date.now(),
+      name,
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      accuracy: currentLocation.accuracy,
+      timestamp: new Date().toISOString(),
+    };
+
+    records.unshift(record);
+    localStorage.setItem('geotrack_records', JSON.stringify(records));
+
+    // Reset form
+    document.getElementById('nameInput').value = '';
+    document.getElementById('saveBtn').disabled = true;
+    currentLocation = null;
+    setStatus('idle', '🌐', 'Ready', 'Rekod berjaya disimpan! Tambah pengguna baru.');
+    document.getElementById('coordsSection').style.display = 'none';
+    document.getElementById('detectBtnText').textContent = 'Detect Location';
+    document.getElementById('detectBtnIcon').textContent = '📍';
+
+    renderRecords();
+    updateStats();
+
+    toast('success', `✅ "${name}" berjaya disimpan!`);
+  }
+
+  // ─────────────────────────────────────────────
+  // DELETE RECORD
+  // ─────────────────────────────────────────────
+  function deleteRecord(id) {
+    const rec = records.find(r => r.id === id);
+    records = records.filter(r => r.id !== id);
+    localStorage.setItem('geotrack_records', JSON.stringify(records));
+    renderRecords();
+    updateStats();
+    toast('info', `🗑 "${rec?.name}" telah dipadam`);
+  }
+
+  function clearAll() {
+    if (records.length === 0) { toast('info', 'Tiada rekod untuk dipadam'); return; }
+    if (!confirm(`Padam semua ${records.length} rekod? Tindakan ini tidak boleh dibatalkan.`)) return;
+    records = [];
+    localStorage.setItem('geotrack_records', JSON.stringify(records));
+    renderRecords();
+    updateStats();
+    toast('info', '🗑 Semua rekod telah dipadam');
+  }
+
+  // ─────────────────────────────────────────────
+  // RENDER RECORDS
+  // ─────────────────────────────────────────────
+  function renderRecords() {
+    const tbody = document.getElementById('recordsBody');
+    const q = searchQuery.toLowerCase();
+    const filtered = records.filter(r => r.name.toLowerCase().includes(q));
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="6">
+          <div class="empty-records">
+            <div class="empty-records-icon">📭</div>
+            <div>${records.length === 0 ? 'Belum ada rekod disimpan' : 'Tiada rekod sepadan'}</div>
+          </div>
+        </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((r, i) => {
+      const initials = r.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const time = new Date(r.timestamp);
+      const timeStr = time.toLocaleDateString('ms-MY', {day:'2-digit',month:'short'}) + ' ' + time.toLocaleTimeString('ms-MY', {hour:'2-digit',minute:'2-digit'});
+      const accClass = r.accuracy < 20 ? 'acc-good' : r.accuracy < 100 ? 'acc-medium' : 'acc-poor';
+      return `
+        <tr class="record-row" style="animation-delay:${i*0.05}s">
+          <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${String(i+1).padStart(2,'0')}</td>
+          <td>
+            <div class="record-name">
+              <div class="record-avatar">${initials}</div>
+              ${escHtml(r.name)}
+            </div>
+          </td>
+          <td class="record-coords">${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}</td>
+          <td class="record-acc ${accClass}">±${Math.round(r.accuracy)}m</td>
+          <td class="record-time">${timeStr}</td>
+          <td>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="btn-map" onclick="viewOnMap(${r.latitude},${r.longitude})">🗺️ Map</button>
+              <button class="btn btn-danger" onclick="deleteRecord(${r.id})">🗑</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ─────────────────────────────────────────────
+  // FILTER
+  // ─────────────────────────────────────────────
+  function filterRecords() {
+    searchQuery = document.getElementById('searchInput').value;
+    renderRecords();
+  }
+
+  // ─────────────────────────────────────────────
+  // STATS
+  // ─────────────────────────────────────────────
+  function updateStats() {
+    document.getElementById('statTotal').textContent = records.length;
+    const today = new Date().toDateString();
+    const todayCount = records.filter(r => new Date(r.timestamp).toDateString() === today).length;
+    document.getElementById('statToday').textContent = todayCount;
+    if (records.length > 0) {
+      const avg = records.reduce((s,r) => s + r.accuracy, 0) / records.length;
+      document.getElementById('statAvgAcc').textContent = Math.round(avg) + 'm';
+    } else {
+      document.getElementById('statAvgAcc').textContent = '—';
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // EXPORT
+  // ─────────────────────────────────────────────
+  function exportCSV() {
+    if (records.length === 0) { toast('info', 'Tiada rekod untuk diexport'); return; }
+    const header = 'Name,Latitude,Longitude,Accuracy(m),Timestamp\n';
+    const rows = records.map(r =>
+      `"${r.name}",${r.latitude},${r.longitude},${Math.round(r.accuracy)},"${r.timestamp}"`
+    ).join('\n');
+    download('geotrack_records.csv', header + rows, 'text/csv');
+    toast('success', `⬇️ CSV exported (${records.length} rekod)`);
+  }
+
+  function exportJSON() {
+    if (records.length === 0) { toast('info', 'Tiada rekod untuk diexport'); return; }
+    download('geotrack_records.json', JSON.stringify(records, null, 2), 'application/json');
+    toast('success', `{ } JSON exported (${records.length} rekod)`);
+  }
+
+  function download(filename, content, mime) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ─────────────────────────────────────────────
+  // STATUS HELPER
+  // ─────────────────────────────────────────────
+  function setStatus(type, icon, title, detail) {
+    document.getElementById('statusIcon').textContent = icon;
+    document.getElementById('statusIcon').className = `status-icon ${type}`;
+    document.getElementById('statusTitle').textContent = title;
+    document.getElementById('statusTitle').className = `status-title ${type}`;
+    document.getElementById('statusDetail').textContent = detail;
+  }
+
+  // ─────────────────────────────────────────────
+  // TOAST
+  // ─────────────────────────────────────────────
+  function toast(type, msg) {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(20px)';
+      t.style.transition = 'all 0.3s ease';
+      setTimeout(() => t.remove(), 300);
+    }, 3500);
+  }
+
+  // ─────────────────────────────────────────────
+  // UTILS
+  // ─────────────────────────────────────────────
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function shakeElement(id) {
+    const el = document.getElementById(id);
+    el.style.animation = 'none';
+    el.style.borderColor = 'rgba(255,71,87,0.6)';
+    el.style.boxShadow = '0 0 0 3px rgba(255,71,87,0.12)';
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }, 1500);
+  }
+
+  // ─────────────────────────────────────────────
+  // START
+  // ─────────────────────────────────────────────
+  init();
+</script>
+</body>
+</html>
