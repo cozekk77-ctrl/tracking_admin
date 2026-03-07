@@ -3,172 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GeoTrack — Check In</title>
+<title>GeoTrack — Live</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg:      #0c0c0c;
-    --s1:      #111111;
-    --s2:      #161616;
-    --s3:      #1e1e1e;
-    --s4:      #262626;
-    --border:  #2a2a2a;
-    --border2: #383838;
-    --text:    #f0f0f0;
-    --sub:     #888888;
-    --faint:   #505050;
-    --green:   #22c55e;
-    --green-dim: rgba(34,197,94,0.08);
-    --green-b:   rgba(34,197,94,0.2);
-    --blue:    #60a5fa;
-    --blue-dim:  rgba(96,165,250,0.08);
-    --blue-b:    rgba(96,165,250,0.2);
-    --red:     #f87171;
-    --red-dim:   rgba(248,113,113,0.08);
-    --red-b:     rgba(248,113,113,0.2);
-    --amber:   #fbbf24;
-    --r:  8px;
-    --rl: 12px;
+    --bg: #0c0c0c; --s1: #111111; --s2: #161616; --s3: #1e1e1e; --s4: #262626;
+    --border: #2a2a2a; --border2: #383838;
+    --text: #f0f0f0; --sub: #888888; --faint: #505050;
+    --green: #22c55e; --green-dim: rgba(34,197,94,0.08); --green-b: rgba(34,197,94,0.2);
+    --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.08); --blue-b: rgba(96,165,250,0.2);
+    --red: #f87171; --red-dim: rgba(248,113,113,0.08); --red-b: rgba(248,113,113,0.2);
+    --r: 8px; --rl: 12px;
   }
-
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
-
   .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
-
-  .card {
-    width: 100%; max-width: 380px;
-    background: var(--s1); border: 1px solid var(--border); border-radius: var(--rl);
-    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    animation: up 0.4s cubic-bezier(0.22,1,0.36,1) both;
-  }
+  .card { width: 100%; max-width: 380px; background: var(--s1); border: 1px solid var(--border); border-radius: var(--rl); overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
   @keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-
   .card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .site-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .site-name span { color: var(--faint); font-weight: 400; }
-
   .status-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; }
   .s-dot { width: 5px; height: 5px; border-radius: 50%; }
-  .s-dot.idle     { background: var(--faint); }
+  .s-dot.idle { background: var(--faint); }
   .s-dot.tracking { background: var(--green); animation: blink 1.5s ease-in-out infinite; }
-  .s-dot.error    { background: var(--red); }
+  .s-dot.error { background: var(--red); }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-  .s-label.idle     { color: var(--faint); }
+  .s-label.idle { color: var(--faint); }
   .s-label.tracking { color: var(--green); }
-  .s-label.error    { color: var(--red); }
-
+  .s-label.error { color: var(--red); }
   .card-body { padding: 24px 20px; }
-
-  /* ── STEP 1: Name form ── */
   #nameView .title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 5px; }
-  #nameView .desc  { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
-
+  #nameView .desc { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
   .label { display: block; font-size: 11px; font-weight: 500; color: var(--faint); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .input {
-    width: 100%; background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 11px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px;
-    outline: none; -webkit-appearance: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    margin-bottom: 12px;
-  }
+  .input { width: 100%; background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 11px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; -webkit-appearance: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; margin-bottom: 12px; }
   .input:focus { border-color: var(--border2); background: var(--s3); box-shadow: 0 0 0 3px rgba(255,255,255,0.03); }
   .input::placeholder { color: var(--faint); }
   .input.err { border-color: var(--red-b) !important; animation: shake 0.3s ease; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
-
-  .btn-start {
-    width: 100%; padding: 12px; background: var(--text); color: var(--bg);
-    border: none; border-radius: var(--r); font-family: 'Inter', sans-serif;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: background 0.15s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px;
-  }
-  .btn-start:hover { background: #ffffff; transform: translateY(-1px); }
-  .btn-start:active { transform: translateY(0); }
-
-  /* ── STEP 2: Tracking view ── */
+  .btn-start { width: 100%; padding: 12px; background: var(--text); color: var(--bg); border: none; border-radius: var(--r); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .btn-start:hover { background: #fff; transform: translateY(-1px); }
   #trackView { display: none; }
-
-  .track-header { margin-bottom: 18px; }
+  .track-header { margin-bottom: 16px; }
   .track-name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); margin-bottom: 3px; }
   .track-since { font-size: 12px; color: var(--faint); }
-
-  /* Live location block */
-  .loc-live {
-    background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
-    overflow: hidden; margin-bottom: 14px; transition: border-color 0.3s;
-  }
+  .loc-live { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 14px; transition: border-color 0.3s; }
   .loc-live.active { border-color: var(--green-b); }
   .loc-live.searching { border-color: var(--blue-b); }
   .loc-live.lost { border-color: var(--red-b); }
-
   .loc-live-top { padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-  .loc-pulse {
-    width: 32px; height: 32px; border-radius: var(--r);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .active   .loc-pulse { background: var(--green-dim); }
+  .loc-pulse { width: 32px; height: 32px; border-radius: var(--r); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
+  .active .loc-pulse { background: var(--green-dim); }
   .searching .loc-pulse { background: var(--blue-dim); }
-  .lost      .loc-pulse { background: var(--red-dim); }
+  .lost .loc-pulse { background: var(--red-dim); }
   .loc-pulse svg { width: 15px; height: 15px; }
   .arc { animation: rot 1s linear infinite; transform-origin: 12px 12px; }
   @keyframes rot { to{transform:rotate(360deg)} }
-
-  .loc-live-info { flex: 1; }
   .loc-live-title { font-size: 12px; font-weight: 500; margin-bottom: 1px; transition: color 0.3s; }
-  .active   .loc-live-title { color: var(--green); }
+  .active .loc-live-title { color: var(--green); }
   .searching .loc-live-title { color: var(--blue); }
-  .lost      .loc-live-title { color: var(--red); }
+  .lost .loc-live-title { color: var(--red); }
   .loc-live-sub { font-size: 11px; color: var(--faint); }
-
-  .loc-live-update {
-    font-family: 'Space Mono', monospace; font-size: 10px;
-    color: var(--green); margin-left: auto; white-space: nowrap;
-    animation: flashUpdate 0.4s ease;
-  }
-  @keyframes flashUpdate { 0%{opacity:0} 50%{opacity:1} 100%{opacity:1} }
-
-  /* Coords */
-  .coords-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 14px 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .loc-live-update { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--green); margin-left: auto; white-space: nowrap; }
+  .coords-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 14px 12px; border-top: 1px solid var(--border); }
   .coord-item { display: flex; flex-direction: column; gap: 2px; }
   .coord-key { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); }
-  .coord-val { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--green); transition: color 0.3s; }
-
-  /* Stats row */
+  .coord-val { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--green); }
   .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
   .stat-box { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px; }
   .stat-box-label { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .stat-box-val   { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
-
-  /* Update counter */
-  .update-log { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 14px; margin-bottom: 14px; max-height: 100px; overflow-y: auto; }
-  .log-title { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .log-item { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--sub); padding: 2px 0; border-bottom: 1px solid var(--border); }
-  .log-item:last-child { border-bottom: none; }
-  .log-item span { color: var(--green); }
-
-  /* Stop button */
-  .btn-stop {
-    width: 100%; padding: 11px; background: var(--red-dim); border: 1px solid var(--red-b);
-    color: var(--red); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
-    border-radius: var(--r); cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-  }
+  .stat-box-val { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
+  .btn-stop { width: 100%; padding: 11px; background: var(--red-dim); border: 1px solid var(--red-b); color: var(--red); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; border-radius: var(--r); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
   .btn-stop:hover { background: rgba(248,113,113,0.15); }
-
-  /* Stopped view */
   #stoppedView { display: none; text-align: center; animation: fadeUp 0.4s ease both; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   .stopped-ring { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--border); background: var(--s2); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
-  .stopped-ring svg { width: 26px; height: 26px; }
   .stopped-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
-  .stopped-desc  { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
+  .stopped-desc { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
   .stopped-stats { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--sub); line-height: 1.9; text-align: left; margin-bottom: 14px; }
   .stopped-stats b { color: var(--text); }
   .btn-restart { width: 100%; padding: 11px; background: transparent; border: 1px solid var(--border); color: var(--sub); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; border-radius: var(--r); cursor: pointer; transition: all 0.15s; }
   .btn-restart:hover { border-color: var(--border2); color: var(--text); }
-
   ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -177,7 +92,6 @@
 <body>
 <div class="page">
   <div class="card">
-
     <div class="card-head">
       <div class="site-name">GeoTrack <span>/ Live</span></div>
       <div class="status-pill">
@@ -185,14 +99,13 @@
         <span class="s-label idle" id="sLabel">Idle</span>
       </div>
     </div>
-
     <div class="card-body">
 
-      <!-- Step 1: Enter name -->
+      <!-- Step 1 -->
       <div id="nameView">
         <div class="title">Masukkan Nama</div>
         <p class="desc">Lokasi anda akan dikesan dan dikongsi secara langsung dengan admin.</p>
-        <label class="label" for="nameInp">Nama penuh</label>
+        <label class="label">Nama penuh</label>
         <input type="text" class="input" id="nameInp" placeholder="Nama anda..." autocomplete="name" />
         <button class="btn-start" onclick="startTracking()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
@@ -200,23 +113,20 @@
         </button>
       </div>
 
-      <!-- Step 2: Live tracking -->
+      <!-- Step 2 -->
       <div id="trackView">
         <div class="track-header">
           <div class="track-name" id="trackName">—</div>
-          <div class="track-since" id="trackSince">Bermula —</div>
+          <div class="track-since" id="trackSince">—</div>
         </div>
-
         <div class="loc-live searching" id="locLive">
           <div class="loc-live-top">
             <div class="loc-pulse" id="locPulse">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round">
-                <circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="28 6"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="28 6"/></svg>
             </div>
-            <div class="loc-live-info">
+            <div style="flex:1">
               <div class="loc-live-title" id="liveTitle">Mengesan lokasi...</div>
-              <div class="loc-live-sub"  id="liveSub">Mendapatkan GPS pertama</div>
+              <div class="loc-live-sub" id="liveSub">Mendapatkan GPS pertama</div>
             </div>
             <div class="loc-live-update" id="lastUpdate" style="display:none"></div>
           </div>
@@ -227,25 +137,18 @@
             <div class="coord-item"><span class="coord-key">Kelajuan</span><span class="coord-val" id="spdVal">—</span></div>
           </div>
         </div>
-
         <div class="stats-row">
           <div class="stat-box"><div class="stat-box-label">Updates</div><div class="stat-box-val" id="updateCount">0</div></div>
           <div class="stat-box"><div class="stat-box-label">Masa</div><div class="stat-box-val" id="elapsed">00:00</div></div>
           <div class="stat-box"><div class="stat-box-label">Jarak</div><div class="stat-box-val" id="distVal">0 m</div></div>
         </div>
-
-        <div class="update-log">
-          <div class="log-title">Log Lokasi</div>
-          <div id="logBody"></div>
-        </div>
-
         <button class="btn-stop" onclick="stopTracking()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
           Henti Tracking
         </button>
       </div>
 
-      <!-- Step 3: Stopped -->
+      <!-- Step 3 -->
       <div id="stoppedView">
         <div class="stopped-ring">
           <svg viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
@@ -262,7 +165,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, deleteDoc, serverTimestamp, collection } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAKEBjSdoLFCgGJFFdLIzP0-_Xf_VK2Jtk",
@@ -277,157 +180,101 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  let userName    = '';
-  let sessionId   = null;
-  let watchId     = null;
-  let timerInterval = null;
-  let startTime   = null;
-  let updateCount = 0;
-  let lastPos     = null;
-  let totalDist   = 0;
+  let userName = '', sessionId = null, watchId = null;
+  let timerInterval = null, startTime = null;
+  let updateCount = 0, lastPos = null, totalDist = 0;
 
-  // ── START TRACKING ────────────────────────────
   window.startTracking = async function () {
     const name = document.getElementById('nameInp').value.trim();
     if (!name) {
       const inp = document.getElementById('nameInp');
-      inp.classList.add('err');
-      inp.focus();
-      setTimeout(() => inp.classList.remove('err'), 400);
-      return;
+      inp.classList.add('err'); inp.focus();
+      setTimeout(() => inp.classList.remove('err'), 400); return;
     }
+    if (!navigator.geolocation) { alert('Browser tidak sokong Geolocation.'); return; }
 
-    if (!navigator.geolocation) {
-      alert('Browser anda tidak menyokong Geolocation.');
-      return;
-    }
-
-    userName  = name;
+    userName = name;
     sessionId = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
-    startTime = Date.now();
-    updateCount = 0;
-    totalDist   = 0;
-    lastPos     = null;
+    startTime = Date.now(); updateCount = 0; totalDist = 0; lastPos = null;
 
-    // Switch view
     document.getElementById('nameView').style.display  = 'none';
     document.getElementById('trackView').style.display = 'block';
     document.getElementById('trackName').textContent   = name;
     document.getElementById('trackSince').textContent  = 'Bermula ' + new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-
     setStatus('tracking', 'Live');
 
-    // Create session in Firebase
     await setDoc(doc(db, 'live_sessions', sessionId), {
-      name,
-      sessionId,
-      startedAt: serverTimestamp(),
-      active: true,
-      latitude: null,
-      longitude: null,
-      accuracy: null,
-      speed: null,
-      lastUpdate: serverTimestamp(),
-      updateCount: 0
+      name, sessionId, startedAt: serverTimestamp(), active: true,
+      latitude: null, longitude: null, accuracy: null, speed: null,
+      heading: null, lastUpdate: serverTimestamp(), updateCount: 0, totalDistance: 0, trail: []
     });
 
-    // Start timer
     timerInterval = setInterval(updateTimer, 1000);
-
-    // Start watching position
-    watchId = navigator.geolocation.watchPosition(
-      onPosition,
-      onError,
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-
-    // Cleanup on tab close
+    watchId = navigator.geolocation.watchPosition(onPosition, onError,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     window.addEventListener('beforeunload', cleanup);
   };
 
   async function onPosition(pos) {
-    const { latitude, longitude, accuracy, speed } = pos.coords;
+    const { latitude, longitude, accuracy, speed, heading } = pos.coords;
     updateCount++;
-
-    // Calc distance
-    if (lastPos) {
-      totalDist += haversine(lastPos.lat, lastPos.lng, latitude, longitude);
-    }
+    if (lastPos) totalDist += haversine(lastPos.lat, lastPos.lng, latitude, longitude);
     lastPos = { lat: latitude, lng: longitude };
 
-    // Update Firebase
-    try {
-      await setDoc(doc(db, 'live_sessions', sessionId), {
-        name: userName,
-        sessionId,
-        active: true,
-        latitude,
-        longitude,
-        accuracy,
-        speed: speed || 0,
-        lastUpdate: serverTimestamp(),
-        updateCount,
-        totalDistance: Math.round(totalDist)
-      }, { merge: true });
-    } catch (e) {
-      console.error('Firebase update error:', e);
-    }
-
-    // Update UI
     const now = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+    try {
+      // Store trail as array of {lat,lng,t} — keep last 50 points
+      const trailPoint = { lat: latitude, lng: longitude, t: Date.now() };
+      await setDoc(doc(db, 'live_sessions', sessionId), {
+        name: userName, sessionId, active: true,
+        latitude, longitude, accuracy, speed: speed || 0, heading: heading || null,
+        lastUpdate: serverTimestamp(), updateCount,
+        totalDistance: Math.round(totalDist),
+        lastPoint: trailPoint
+      }, { merge: true });
+
+      // Store trail separately for path drawing
+      await setDoc(doc(db, 'live_trails', sessionId), {
+        sessionId, name: userName,
+        [`p_${updateCount}`]: trailPoint
+      }, { merge: true });
+
+    } catch (e) { console.error(e); }
+
+    // UI update
     document.getElementById('latVal').textContent  = latitude.toFixed(6);
     document.getElementById('lngVal').textContent  = longitude.toFixed(6);
     document.getElementById('accVal').textContent  = `\u00b1${Math.round(accuracy)}m`;
-    document.getElementById('spdVal').textContent  = speed ? `${(speed * 3.6).toFixed(1)} km/h` : '0 km/h';
+    document.getElementById('spdVal').textContent  = speed ? `${(speed*3.6).toFixed(1)} km/h` : '0 km/h';
     document.getElementById('coordsGrid').style.display = 'grid';
-
     const lu = document.getElementById('lastUpdate');
-    lu.style.display = 'block';
-    lu.textContent   = now;
-
+    lu.style.display = 'block'; lu.textContent = now;
     document.getElementById('updateCount').textContent = updateCount;
-    document.getElementById('distVal').textContent     = totalDist < 1000 ? `${Math.round(totalDist)} m` : `${(totalDist/1000).toFixed(2)} km`;
-
-    // Set state active
+    document.getElementById('distVal').textContent = totalDist < 1000 ? `${Math.round(totalDist)} m` : `${(totalDist/1000).toFixed(2)} km`;
     setLocState('active', 'Lokasi aktif', `Update ke-${updateCount} · ${now}`);
-
-    // Add log entry (keep last 5)
-    const logBody = document.getElementById('logBody');
-    const entry   = document.createElement('div');
-    entry.className = 'log-item';
-    entry.innerHTML = `${now} &nbsp;<span>${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span>`;
-    logBody.insertBefore(entry, logBody.firstChild);
-    while (logBody.children.length > 5) logBody.removeChild(logBody.lastChild);
   }
 
-  function onError(err) {
-    setLocState('lost', 'Isyarat lemah', 'Cuba bergerak ke kawasan terbuka');
-    setStatus('error', 'Lemah');
-  }
+  function onError() { setLocState('lost', 'Isyarat lemah', 'Cuba bergerak ke kawasan terbuka'); setStatus('error', 'Lemah'); }
 
-  // ── STOP TRACKING ─────────────────────────────
   window.stopTracking = async function () {
-    cleanup();
-
+    await cleanup();
     const elapsed = formatTime(Math.floor((Date.now() - startTime) / 1000));
     document.getElementById('stoppedStats').innerHTML =
       `<b>Nama</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${esc(userName)}<br>` +
       `<b>Masa</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${elapsed}<br>` +
       `<b>Updates</b>&nbsp;&nbsp;${updateCount} kali<br>` +
-      `<b>Jarak</b>&nbsp;&nbsp;&nbsp;&nbsp;${totalDist < 1000 ? Math.round(totalDist) + ' m' : (totalDist/1000).toFixed(2) + ' km'}`;
-
+      `<b>Jarak</b>&nbsp;&nbsp;&nbsp;&nbsp;${totalDist < 1000 ? Math.round(totalDist)+' m' : (totalDist/1000).toFixed(2)+' km'}`;
     document.getElementById('trackView').style.display   = 'none';
     document.getElementById('stoppedView').style.display = 'block';
     setStatus('idle', 'Selesai');
   };
 
   async function cleanup() {
-    if (watchId !== null)    { navigator.geolocation.clearWatch(watchId); watchId = null; }
-    if (timerInterval)       { clearInterval(timerInterval); timerInterval = null; }
+    if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    if (timerInterval)    { clearInterval(timerInterval); timerInterval = null; }
     if (sessionId) {
-      try { await setDoc(doc(db, 'live_sessions', sessionId), { active: false, endedAt: serverTimestamp() }, { merge: true }); }
-      catch (e) {}
+      try { await setDoc(doc(db, 'live_sessions', sessionId), { active: false, endedAt: serverTimestamp() }, { merge: true }); } catch {}
     }
   }
 
@@ -436,24 +283,21 @@
     document.getElementById('nameInp').value = '';
     document.getElementById('stoppedView').style.display = 'none';
     document.getElementById('nameView').style.display    = 'block';
-    document.getElementById('logBody').innerHTML         = '';
     document.getElementById('coordsGrid').style.display  = 'none';
     document.getElementById('lastUpdate').style.display  = 'none';
     setStatus('idle', 'Idle');
   };
 
-  // ── HELPERS ───────────────────────────────────
   function setStatus(state, label) {
-    document.getElementById('sDot').className   = `s-dot ${state}`;
+    document.getElementById('sDot').className = `s-dot ${state}`;
     document.getElementById('sLabel').className = `s-label ${state}`;
     document.getElementById('sLabel').textContent = label;
   }
 
   function setLocState(state, title, sub) {
-    document.getElementById('locLive').className       = `loc-live ${state}`;
-    document.getElementById('liveTitle').textContent   = title;
-    document.getElementById('liveSub').textContent     = sub;
-
+    document.getElementById('locLive').className = `loc-live ${state}`;
+    document.getElementById('liveTitle').textContent = title;
+    document.getElementById('liveSub').textContent = sub;
     const icons = {
       active:    `<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
       searching: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="28 6"/></svg>`,
@@ -468,20 +312,20 @@
   }
 
   function formatTime(s) {
-    const m = Math.floor(s / 60), sec = s % 60;
+    const m = Math.floor(s/60), sec = s%60;
     return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   }
 
-  function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371000, rad = Math.PI / 180;
-    const dLat = (lat2 - lat1) * rad, dLon = (lon2 - lon1) * rad;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  function haversine(lat1,lon1,lat2,lon2) {
+    const R=6371000, r=Math.PI/180;
+    const dLat=(lat2-lat1)*r, dLon=(lon2-lon1)*r;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
 
   function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  document.getElementById('nameInp').addEventListener('keydown', e => { if (e.key === 'Enter') window.startTracking(); });
+  document.getElementById('nameInp').addEventListener('keydown', e => { if (e.key==='Enter') window.startTracking(); });
 </script>
 </body>
 </html>
