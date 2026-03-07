@@ -2,281 +2,379 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>GeoTrack — Check In</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #080c10;
-    --surface: #0d1117;
-    --surface2: #161b22;
+    --bg: #030507;
+    --surface: #0a0e13;
+    --surface2: #111620;
+    --surface3: #1a2030;
     --accent: #00ff88;
     --accent2: #00bfff;
-    --text: #e6edf3;
-    --muted: #7d8590;
-    --border: rgba(255,255,255,0.08);
+    --warn: #ffb800;
+    --danger: #ff4757;
+    --text: #e8f0fe;
+    --muted: #6b7a99;
+    --border: rgba(255,255,255,0.07);
+    --r: 16px;
   }
-  body {
+
+  html, body {
+    height: 100%;
     background: var(--bg);
     color: var(--text);
     font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    overflow-x: hidden;
   }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+
+  /* animated background */
+  .bg-fx {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 50% -100px, rgba(0,255,136,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 100% 100%, rgba(0,191,255,0.06) 0%, transparent 70%);
+  }
+  .grid-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background-image:
-      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
+      linear-gradient(rgba(0,255,136,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
-  .orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
-    width: 350px; height: 350px;
-    background: rgba(0,255,136,0.06);
-    top: -100px; left: 50%;
-    transform: translateX(-50%);
-    animation: float 6s ease-in-out infinite;
+
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 20px;
   }
-  @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(20px)} }
 
   .card {
-    position: relative;
-    z-index: 1;
+    width: 100%; max-width: 400px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 420px;
-    animation: fadeUp 0.6s ease;
+    border-radius: 24px;
+    overflow: hidden;
+    animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,255,136,0.05);
   }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(32px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 32px;
+  /* Card top bar */
+  .card-top {
+    background: linear-gradient(135deg, rgba(0,255,136,0.08) 0%, rgba(0,191,255,0.05) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 24px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .logo-icon {
-    width: 40px; height: 40px;
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-dot {
+    width: 34px; height: 34px;
     background: var(--accent);
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    animation: pulse 2s ease-in-out infinite;
+    font-size: 17px;
+    box-shadow: 0 0 16px rgba(0,255,136,0.4);
+    animation: brandPulse 2.5s ease-in-out infinite;
   }
-  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.4)} 50%{box-shadow:0 0 0 8px rgba(0,255,136,0)} }
-  .logo-text { font-size: 22px; font-weight: 800; }
-  .logo-text span { color: var(--accent); }
-
-  h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
-  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
-
-  .input-group { margin-bottom: 16px; }
-  .input-label {
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 8px; display: block;
+  @keyframes brandPulse {
+    0%,100% { box-shadow: 0 0 16px rgba(0,255,136,0.4); }
+    50% { box-shadow: 0 0 28px rgba(0,255,136,0.7); }
   }
-  .input-field {
+  .brand-name { font-size: 18px; font-weight: 800; }
+  .brand-name em { color: var(--accent); font-style: normal; }
+  .status-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(0,255,136,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,136,0.2);
+  }
+  .status-pill .dot {
+    display: inline-block; width: 5px; height: 5px;
+    background: var(--accent); border-radius: 50%;
+    margin-right: 5px;
+    animation: dotBlink 1.5s ease-in-out infinite;
+  }
+  @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* Card body */
+  .card-body { padding: 28px 24px; }
+
+  .heading { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .subheading { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 24px; }
+
+  /* Location auto-detect section */
+  .loc-detect-box {
     background: var(--surface2);
     border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 18px;
+    margin-bottom: 18px;
+    transition: border-color 0.3s;
+  }
+  .loc-detect-box.detecting { border-color: rgba(0,191,255,0.3); }
+  .loc-detect-box.success { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.03); }
+  .loc-detect-box.fail { border-color: rgba(255,71,87,0.3); }
+
+  .loc-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .loc-icon-wrap {
+    width: 38px; height: 38px;
     border-radius: 10px;
-    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    background: var(--surface3);
+    flex-shrink: 0;
+  }
+  .loc-icon-wrap.detecting { background: rgba(0,191,255,0.1); animation: iconSpin 1s linear infinite; }
+  .loc-icon-wrap.success { background: rgba(0,255,136,0.1); }
+  .loc-icon-wrap.fail { background: rgba(255,71,87,0.1); }
+  @keyframes iconSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .loc-title { font-size: 13px; font-weight: 700; }
+  .loc-title.detecting { color: var(--accent2); }
+  .loc-title.success { color: var(--accent); }
+  .loc-title.fail { color: var(--danger); }
+  .loc-subtitle { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .loc-coords {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 4px;
+  }
+  .coord-chip {
+    background: var(--surface3);
+    border-radius: 8px; padding: 8px 10px;
+  }
+  .coord-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .coord-val { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); font-weight: 700; }
+
+  .acc-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface3); border-radius: 8px; padding: 8px 10px;
+    margin-top: 8px;
+  }
+  .acc-lbl { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .acc-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 700; }
+
+  .retry-btn {
+    width: 100%; margin-top: 10px;
+    background: transparent;
+    border: 1px solid rgba(255,71,87,0.3);
+    color: var(--danger);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700;
+    padding: 9px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .retry-btn:hover { background: rgba(255,71,87,0.08); }
+
+  /* Name input */
+  .input-group { margin-bottom: 16px; }
+  .input-label {
+    display: block;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .input-wrap { position: relative; }
+  .input-emoji {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px; pointer-events: none;
+  }
+  .input-field {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px 14px 44px;
     color: var(--text);
     font-family: 'Syne', sans-serif;
     font-size: 15px; font-weight: 600;
-    outline: none; transition: all 0.2s; width: 100%;
+    outline: none;
+    transition: all 0.25s;
+    -webkit-appearance: none;
   }
   .input-field:focus {
     border-color: rgba(0,255,136,0.4);
-    box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+    box-shadow: 0 0 0 3px rgba(0,255,136,0.07);
+    background: var(--surface3);
   }
   .input-field::placeholder { color: var(--muted); font-weight: 400; }
-  .input-field.error { border-color: rgba(255,71,87,0.5); }
+  .input-field.shake { animation: shake 0.4s ease; border-color: rgba(255,71,87,0.5) !important; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+  }
 
-  .btn {
-    width: 100%; padding: 15px;
-    border-radius: 10px; border: none;
-    cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px; font-weight: 700;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-bottom: 12px;
-  }
-  .btn-detect {
-    background: var(--surface2);
-    color: var(--accent2);
-    border: 1px solid rgba(0,191,255,0.3);
-  }
-  .btn-detect:hover:not(:disabled) {
-    background: rgba(0,191,255,0.08);
-    border-color: var(--accent2);
-  }
-  .btn-submit {
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
     background: var(--accent);
-    color: #080c10;
+    color: #030507;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    letter-spacing: 0.3px;
+    position: relative; overflow: hidden;
   }
-  .btn-submit:hover:not(:disabled) {
+  .submit-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .submit-btn:hover:not(:disabled) {
     background: #00ffaa;
-    box-shadow: 0 0 20px rgba(0,255,136,0.3);
+    box-shadow: 0 8px 24px rgba(0,255,136,0.35);
     transform: translateY(-1px);
   }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+  .submit-btn:active:not(:disabled) { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+  .spin { animation: spinAnim 0.8s linear infinite; display: inline-block; }
+  @keyframes spinAnim { from{transform:rotate(0)} to{transform:rotate(360deg)} }
 
-  .location-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    display: none;
-  }
-  .location-box.show { display: block; }
-  .location-row {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: 6px;
-  }
-  .location-row:last-child { margin-bottom: 0; }
-  .loc-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-  .loc-value { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); }
-
-  .status-msg {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    margin-bottom: 16px;
-    display: none;
-  }
-  .status-msg.show { display: flex; }
-  .status-msg.loading { background: rgba(0,191,255,0.08); color: var(--accent2); border: 1px solid rgba(0,191,255,0.2); }
-  .status-msg.success { background: rgba(0,255,136,0.08); color: var(--accent); border: 1px solid rgba(0,255,136,0.2); }
-  .status-msg.error { background: rgba(255,71,87,0.08); color: #ff4757; border: 1px solid rgba(255,71,87,0.2); }
-
-  .spin { animation: spin 1s linear infinite; display: inline-block; }
-  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-
-  .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
+  /* Success screen */
   .success-screen {
-    text-align: center;
-    display: none;
-    animation: fadeUp 0.5s ease;
+    display: none; text-align: center;
+    animation: successIn 0.6s cubic-bezier(0.22,1,0.36,1);
   }
   .success-screen.show { display: block; }
-  .success-icon {
-    width: 80px; height: 80px;
+  @keyframes successIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+  .success-ring {
+    width: 88px; height: 88px;
     background: rgba(0,255,136,0.1);
     border: 2px solid var(--accent);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 36px;
+    font-size: 40px;
     margin: 0 auto 20px;
-    animation: successPop 0.5s ease;
+    box-shadow: 0 0 40px rgba(0,255,136,0.2);
+    animation: ringPop 0.6s cubic-bezier(0.22,1,0.36,1);
   }
-  @keyframes successPop { 0%{transform:scale(0)} 70%{transform:scale(1.1)} 100%{transform:scale(1)} }
-  .success-title { font-size: 24px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
-  .success-sub { color: var(--muted); font-size: 14px; line-height: 1.6; }
-  .success-coords {
+  @keyframes ringPop { 0%{transform:scale(0)} 60%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  .success-title { font-size: 26px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+  .success-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .success-data {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
     font-family: 'Space Mono', monospace;
     font-size: 11px;
     color: var(--muted);
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-top: 16px;
-    text-align: left;
+    line-height: 1.8;
   }
-  .btn-again {
-    margin-top: 20px;
+  .success-data strong { color: var(--accent); }
+  .again-btn {
+    width: 100%; margin-top: 16px;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
     font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    padding: 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .btn-again:hover { border-color: var(--accent); color: var(--accent); }
+  .again-btn:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
-<div class="orb"></div>
+<div class="bg-fx"></div>
+<div class="grid-bg"></div>
 
-<div class="card">
-  <!-- FORM -->
-  <div id="formSection">
-    <div class="logo">
-      <div class="logo-icon">📡</div>
-      <div class="logo-text">Geo<span>Track</span></div>
-    </div>
-
-    <h1>Check In</h1>
-    <p class="subtitle">Masukkan nama dan kongsi lokasi anda dengan admin.</p>
-
-    <div class="input-group">
-      <label class="input-label">Nama Penuh</label>
-      <input type="text" class="input-field" id="nameInput" placeholder="Contoh: Ahmad Razif..." autocomplete="off" />
-    </div>
-
-    <div class="status-msg" id="statusMsg">
-      <span id="statusIcon">⏳</span>
-      <span id="statusText">Loading...</span>
-    </div>
-
-    <div class="location-box" id="locationBox">
-      <div class="location-row">
-        <span class="loc-label">Latitude</span>
-        <span class="loc-value" id="latDisplay">—</span>
+<div class="page">
+  <div class="card">
+    <div class="card-top">
+      <div class="brand">
+        <div class="brand-dot">📡</div>
+        <div class="brand-name">Geo<em>Track</em></div>
       </div>
-      <div class="location-row">
-        <span class="loc-label">Longitude</span>
-        <span class="loc-value" id="lngDisplay">—</span>
-      </div>
-      <div class="location-row">
-        <span class="loc-label">Accuracy</span>
-        <span class="loc-value" id="accDisplay">—</span>
-      </div>
+      <div class="status-pill"><span class="dot"></span>CHECK IN</div>
     </div>
 
-    <button class="btn btn-detect" id="detectBtn" onclick="detectLocation()">
-      <span id="detectIcon">📍</span>
-      <span id="detectText">Detect Lokasi Saya</span>
-    </button>
+    <div class="card-body">
 
-    <button class="btn btn-submit" id="submitBtn" onclick="submitData()" disabled>
-      <span>✅</span>
-      <span>Hantar ke Admin</span>
-    </button>
-  </div>
+      <!-- FORM -->
+      <div id="formSection">
+        <div class="heading">Daftar Kehadiran</div>
+        <p class="subheading">Masukkan nama anda. Lokasi sedang dikesan secara automatik.</p>
 
-  <!-- SUCCESS -->
-  <div class="success-screen" id="successScreen">
-    <div class="success-icon">✅</div>
-    <div class="success-title">Berjaya!</div>
-    <div class="success-sub">Lokasi anda telah dihantar kepada admin. Terima kasih!</div>
-    <div class="success-coords" id="successCoords"></div>
-    <button class="btn-again" onclick="resetForm()">↩ Check in lagi</button>
+        <!-- Location detection box -->
+        <div class="loc-detect-box detecting" id="locBox">
+          <div class="loc-header">
+            <div class="loc-icon-wrap detecting" id="locIconWrap">🔄</div>
+            <div>
+              <div class="loc-title detecting" id="locTitle">Mengesan lokasi...</div>
+              <div class="loc-subtitle" id="locSub">Sila benarkan akses lokasi di browser</div>
+            </div>
+          </div>
+          <div class="loc-coords" id="locCoords" style="display:none">
+            <div class="coord-chip">
+              <div class="coord-lbl">Latitude</div>
+              <div class="coord-val" id="latVal">—</div>
+            </div>
+            <div class="coord-chip">
+              <div class="coord-lbl">Longitude</div>
+              <div class="coord-val" id="lngVal">—</div>
+            </div>
+          </div>
+          <div class="acc-row" id="accRow" style="display:none">
+            <span class="acc-lbl">📏 Accuracy</span>
+            <span class="acc-val" id="accVal">—</span>
+          </div>
+          <button class="retry-btn" id="retryBtn" style="display:none" onclick="startDetect()">↩ Cuba Semula</button>
+        </div>
+
+        <!-- Name input -->
+        <div class="input-group">
+          <label class="input-label">Nama Penuh</label>
+          <div class="input-wrap">
+            <span class="input-emoji">👤</span>
+            <input type="text" class="input-field" id="nameInput" placeholder="Nama anda..." autocomplete="name" />
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitData()" disabled>
+          <span id="submitIcon">✅</span>
+          <span id="submitText">Hantar Check In</span>
+        </button>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-ring">✅</div>
+        <div class="success-title">Check In Berjaya!</div>
+        <p class="success-sub">Terima kasih! Lokasi anda telah direkodkan oleh admin.</p>
+        <div class="success-data" id="successData"></div>
+        <button class="again-btn" onclick="resetForm()">↩ Check in orang lain</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
@@ -293,128 +391,130 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
   let currentLocation = null;
-  let isDetecting = false;
 
-  window.detectLocation = function() {
-    const name = document.getElementById('nameInput').value.trim();
-    if (!name) {
-      document.getElementById('nameInput').classList.add('error');
-      showStatus('error', '⚠️', 'Sila masukkan nama dahulu');
-      setTimeout(() => document.getElementById('nameInput').classList.remove('error'), 2000);
-      return;
-    }
-    if (isDetecting) return;
-    if (!navigator.geolocation) {
-      showStatus('error', '❌', 'Browser tidak support Geolocation');
-      return;
-    }
-
-    isDetecting = true;
-    document.getElementById('detectBtn').disabled = true;
-    document.getElementById('detectIcon').textContent = '⏳';
-    document.getElementById('detectText').textContent = 'Sedang detect...';
-    document.getElementById('locationBox').classList.remove('show');
-    document.getElementById('submitBtn').disabled = true;
+  // Auto start detect on load
+  window.startDetect = function() {
     currentLocation = null;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('locCoords').style.display = 'none';
+    document.getElementById('accRow').style.display = 'none';
+    document.getElementById('retryBtn').style.display = 'none';
 
-    showStatus('loading', '🔄', 'Mendapatkan koordinat GPS...');
+    setLocState('detecting', '🔄', 'Mengesan lokasi...', 'Sila benarkan akses lokasi di browser');
+
+    if (!navigator.geolocation) {
+      setLocState('fail', '❌', 'Tidak disokong', 'Browser anda tidak support geolocation');
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        isDetecting = false;
         const { latitude, longitude, accuracy } = pos.coords;
         currentLocation = { latitude, longitude, accuracy };
 
-        document.getElementById('latDisplay').textContent = latitude.toFixed(6);
-        document.getElementById('lngDisplay').textContent = longitude.toFixed(6);
-        document.getElementById('accDisplay').textContent = `±${Math.round(accuracy)}m`;
-        document.getElementById('locationBox').classList.add('show');
+        document.getElementById('latVal').textContent = latitude.toFixed(6);
+        document.getElementById('lngVal').textContent = longitude.toFixed(6);
+        document.getElementById('accVal').textContent = `±${Math.round(accuracy)}m`;
+        document.getElementById('locCoords').style.display = 'grid';
+        document.getElementById('accRow').style.display = 'flex';
 
-        document.getElementById('detectBtn').disabled = false;
-        document.getElementById('detectIcon').textContent = '🔄';
-        document.getElementById('detectText').textContent = 'Detect Semula';
+        setLocState('success', '✅', 'Lokasi ditemui!', `GPS accuracy ±${Math.round(accuracy)}m`);
         document.getElementById('submitBtn').disabled = false;
-
-        showStatus('success', '✅', `Lokasi ditemui! Accuracy ±${Math.round(accuracy)}m`);
+        document.getElementById('nameInput').focus();
       },
       (err) => {
-        isDetecting = false;
-        document.getElementById('detectBtn').disabled = false;
-        document.getElementById('detectIcon').textContent = '📍';
-        document.getElementById('detectText').textContent = 'Detect Lokasi Saya';
-
         let msg = '';
         switch(err.code) {
-          case 1: msg = 'Permission ditolak. Benarkan akses lokasi di browser.'; break;
-          case 2: msg = 'Lokasi tidak dapat dikesan. Cuba semula.'; break;
+          case 1: msg = 'Permission ditolak. Tap "Allow" di browser.'; break;
+          case 2: msg = 'Lokasi tidak dapat dikesan.'; break;
           case 3: msg = 'Timeout. Cuba semula.'; break;
           default: msg = 'Ralat tidak diketahui.';
         }
-        showStatus('error', '❌', msg);
+        setLocState('fail', '📵', 'Gagal detect', msg);
+        document.getElementById('retryBtn').style.display = 'block';
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
+  function setLocState(state, icon, title, sub) {
+    const box = document.getElementById('locBox');
+    const iconWrap = document.getElementById('locIconWrap');
+    const t = document.getElementById('locTitle');
+    box.className = `loc-detect-box ${state}`;
+    iconWrap.className = `loc-icon-wrap ${state}`;
+    iconWrap.textContent = icon;
+    t.className = `loc-title ${state}`;
+    t.textContent = title;
+    document.getElementById('locSub').textContent = sub;
+  }
+
   window.submitData = async function() {
     const name = document.getElementById('nameInput').value.trim();
-    if (!name || !currentLocation) return;
+    if (!name) {
+      document.getElementById('nameInput').classList.add('shake');
+      setTimeout(() => document.getElementById('nameInput').classList.remove('shake'), 500);
+      document.getElementById('nameInput').focus();
+      return;
+    }
+    if (!currentLocation) return;
 
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').innerHTML = '<span class="spin">⏳</span> <span>Menghantar...</span>';
+    document.getElementById('submitIcon').className = 'spin';
+    document.getElementById('submitIcon').textContent = '⏳';
+    document.getElementById('submitText').textContent = 'Menghantar...';
 
     try {
       await addDoc(collection(db, 'locations'), {
-        name: name,
+        name,
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
         accuracy: currentLocation.accuracy,
         timestamp: serverTimestamp(),
-        userAgent: navigator.userAgent.substring(0, 100)
+        source: 'qr'
       });
 
-      // Show success
-      document.getElementById('successCoords').textContent =
-        `Nama: ${name}\nLat: ${currentLocation.latitude.toFixed(6)}\nLng: ${currentLocation.longitude.toFixed(6)}\nAccuracy: ±${Math.round(currentLocation.accuracy)}m`;
+      document.getElementById('successData').innerHTML =
+        `<strong>Nama:</strong> ${esc(name)}<br>` +
+        `<strong>Lat:</strong> ${currentLocation.latitude.toFixed(6)}<br>` +
+        `<strong>Lng:</strong> ${currentLocation.longitude.toFixed(6)}<br>` +
+        `<strong>Accuracy:</strong> ±${Math.round(currentLocation.accuracy)}m<br>` +
+        `<strong>Masa:</strong> ${new Date().toLocaleString('ms-MY')}`;
 
       document.getElementById('formSection').style.display = 'none';
       document.getElementById('successScreen').classList.add('show');
 
-    } catch (err) {
-      console.error(err);
-      showStatus('error', '❌', 'Gagal hantar data. Cuba semula.');
+    } catch(e) {
+      setLocState('fail', '❌', 'Gagal hantar', e.message);
       document.getElementById('submitBtn').disabled = false;
-      document.getElementById('submitBtn').innerHTML = '<span>✅</span> <span>Hantar ke Admin</span>';
+      document.getElementById('submitIcon').textContent = '✅';
+      document.getElementById('submitIcon').className = '';
+      document.getElementById('submitText').textContent = 'Hantar Check In';
     }
   };
 
   window.resetForm = function() {
     document.getElementById('nameInput').value = '';
-    document.getElementById('locationBox').classList.remove('show');
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').innerHTML = '<span>✅</span> <span>Hantar ke Admin</span>';
-    document.getElementById('detectIcon').textContent = '📍';
-    document.getElementById('detectText').textContent = 'Detect Lokasi Saya';
-    document.getElementById('detectBtn').disabled = false;
-    document.getElementById('statusMsg').classList.remove('show');
     document.getElementById('formSection').style.display = 'block';
     document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitIcon').textContent = '✅';
+    document.getElementById('submitIcon').className = '';
+    document.getElementById('submitText').textContent = 'Hantar Check In';
     currentLocation = null;
+    startDetect();
   };
 
-  function showStatus(type, icon, text) {
-    const el = document.getElementById('statusMsg');
-    el.className = `status-msg show ${type}`;
-    document.getElementById('statusIcon').textContent = icon;
-    document.getElementById('statusText').textContent = text;
-  }
+  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   // Enter key
-  document.getElementById('nameInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') window.detectLocation();
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.submitData();
   });
+
+  // Auto start
+  startDetect();
 </script>
 </body>
 </html>
