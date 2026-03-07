@@ -4,407 +4,380 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GeoTrack — Check In</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #04070a;
-    --s1: #090d12;
-    --s2: #0f1520;
-    --s3: #161e2e;
-    --accent: #00e87a;
-    --accent2: #00b4d8;
-    --text: #dde8f5;
-    --sub: #4e6080;
-    --border: rgba(255,255,255,0.06);
-    --r: 14px;
+    --bg: #f5f5f3;
+    --white: #ffffff;
+    --black: #0a0a0a;
+    --gray-1: #111111;
+    --gray-2: #333333;
+    --gray-3: #666666;
+    --gray-4: #999999;
+    --gray-5: #cccccc;
+    --gray-6: #e8e8e8;
+    --gray-7: #f2f2f0;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --red-border: #fecaca;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --border: #e2e2e0;
+    --r: 12px;
+    --r-sm: 8px;
   }
 
   html, body {
     height: 100%;
     background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
+    color: var(--gray-1);
+    font-family: 'DM Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  .ambient {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background:
-      radial-gradient(ellipse 700px 500px at 50% -80px, rgba(0,232,122,0.07) 0%, transparent 65%),
-      radial-gradient(ellipse 500px 400px at 100% 110%, rgba(0,180,216,0.05) 0%, transparent 65%);
-  }
-  .grid-bg {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image:
-      linear-gradient(rgba(0,232,122,0.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,232,122,0.022) 1px, transparent 1px);
-    background-size: 36px 36px;
-  }
-
   .page {
-    position: relative; z-index: 1;
     min-height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 28px 20px;
+    padding: 32px 20px;
   }
 
+  /* Card */
   .card {
-    width: 100%; max-width: 390px;
-    background: var(--s1);
+    width: 100%; max-width: 380px;
+    background: var(--white);
     border: 1px solid var(--border);
-    border-radius: 22px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,232,122,0.04), inset 0 1px 0 rgba(255,255,255,0.04);
-    animation: cardIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
+    animation: up 0.5s cubic-bezier(0.22,1,0.36,1) both;
   }
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateY(28px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Top bar */
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 22px;
-    background: rgba(0,232,122,0.03);
+  /* Header */
+  .card-header {
+    padding: 20px 24px;
     border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand-mark {
-    width: 32px; height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    position: relative;
-    box-shadow: 0 0 18px rgba(0,232,122,0.35);
-    animation: markGlow 2.8s ease-in-out infinite;
-    flex-shrink: 0;
+  .wordmark {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--gray-1);
   }
-  .brand-mark::before {
-    content: '';
-    position: absolute; inset: 6px;
-    border: 1.5px solid rgba(0,0,0,0.5);
-    border-radius: 3px;
-  }
-  .brand-mark::after {
-    content: '';
-    position: absolute;
-    width: 5px; height: 5px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 50%;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  @keyframes markGlow {
-    0%,100% { box-shadow: 0 0 18px rgba(0,232,122,0.35); }
-    50%      { box-shadow: 0 0 32px rgba(0,232,122,0.6);  }
-  }
-  .brand-name { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
-  .brand-name b { color: var(--accent); font-weight: 800; }
+  .wordmark span { color: var(--gray-4); font-weight: 400; }
 
-  .status-tag {
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
     font-family: 'Space Mono', monospace;
     font-size: 10px; font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--accent);
-    background: rgba(0,232,122,0.09);
-    border: 1px solid rgba(0,232,122,0.18);
-    padding: 4px 11px; border-radius: 20px;
-    display: flex; align-items: center; gap: 5px;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--green);
   }
-  .pulse-dot {
-    width: 5px; height: 5px;
-    background: var(--accent);
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
     border-radius: 50%;
-    animation: pd 1.6s ease-in-out infinite;
+    animation: blink 2s ease-in-out infinite;
   }
-  @keyframes pd { 0%,100%{opacity:1} 50%{opacity:0.15} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
   /* Body */
-  .body { padding: 26px 22px; }
+  .card-body { padding: 28px 24px; }
 
-  .heading { font-size: 21px; font-weight: 800; letter-spacing: -0.4px; margin-bottom: 5px; }
-  .sub { font-size: 13px; color: var(--sub); line-height: 1.65; margin-bottom: 22px; }
+  .title {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--black);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .desc {
+    font-size: 13px; color: var(--gray-3);
+    line-height: 1.6; margin-bottom: 24px;
+    font-weight: 400;
+  }
 
-  /* Location block */
+  /* Location status block */
   .loc-block {
     border-radius: var(--r);
     border: 1px solid var(--border);
     overflow: hidden;
-    margin-bottom: 18px;
-    transition: border-color 0.3s;
+    margin-bottom: 20px;
+    transition: border-color 0.25s;
   }
-  .loc-block.state-detecting { border-color: rgba(0,180,216,0.25); }
-  .loc-block.state-success   { border-color: rgba(0,232,122,0.3);  }
-  .loc-block.state-error     { border-color: rgba(255,60,70,0.25); }
+  .loc-block.detecting { border-color: var(--blue-border); background: var(--blue-light); }
+  .loc-block.success   { border-color: var(--green-border); background: var(--green-light); }
+  .loc-block.error     { border-color: var(--red-border); background: var(--red-light); }
 
-  .loc-head {
+  .loc-row {
     display: flex; align-items: center; gap: 12px;
     padding: 14px 16px;
-    background: var(--s2);
   }
-  .loc-ico {
-    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  .loc-icon {
+    width: 34px; height: 34px; border-radius: var(--r-sm);
     display: flex; align-items: center; justify-content: center;
-    background: var(--s3);
-    transition: background 0.3s;
+    flex-shrink: 0;
+    transition: background 0.25s;
   }
-  .loc-ico svg { width: 17px; height: 17px; }
-  .state-detecting .loc-ico { background: rgba(0,180,216,0.1);  }
-  .state-success   .loc-ico { background: rgba(0,232,122,0.1);  }
-  .state-error     .loc-ico { background: rgba(255,60,70,0.08); }
+  .detecting .loc-icon { background: var(--blue-border); }
+  .success   .loc-icon { background: var(--green-border); }
+  .error     .loc-icon { background: var(--red-border); }
+  .loc-icon svg { width: 16px; height: 16px; }
 
-  .loc-info { flex: 1; min-width: 0; }
-  .loc-title-text {
-    font-size: 13px; font-weight: 700; margin-bottom: 2px;
-    transition: color 0.3s;
+  .loc-text { flex: 1; min-width: 0; }
+  .loc-title {
+    font-size: 13px; font-weight: 600;
+    margin-bottom: 2px; transition: color 0.25s;
   }
-  .state-detecting .loc-title-text { color: var(--accent2); }
-  .state-success   .loc-title-text { color: var(--accent);  }
-  .state-error     .loc-title-text { color: #ff4060;        }
+  .detecting .loc-title { color: var(--blue); }
+  .success   .loc-title { color: var(--green); }
+  .error     .loc-title { color: var(--red); }
 
-  .loc-desc-text {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; color: var(--sub); line-height: 1.45;
+  .loc-sub {
+    font-size: 11px; color: var(--gray-4);
+    font-weight: 400; line-height: 1.4;
   }
 
   /* Coords */
-  .coords-area {
-    padding: 12px 16px 14px;
-    background: var(--s1);
-    border-top: 1px solid var(--border);
+  .coords-panel {
+    border-top: 1px solid var(--green-border);
+    padding: 12px 16px;
     display: none;
   }
-  .coords-area.show { display: block; }
-  .coords-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .coord-chip {
-    background: var(--s2); border: 1px solid var(--border);
-    border-radius: 9px; padding: 9px 11px;
-  }
-  .coord-lbl {
+  .coords-panel.show { display: block; }
+  .coords-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .coord-item { display: flex; flex-direction: column; gap: 2px; }
+  .coord-key {
     font-family: 'Space Mono', monospace;
     font-size: 9px; font-weight: 700;
     letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--sub); margin-bottom: 4px;
+    color: var(--gray-4);
   }
   .coord-val {
     font-family: 'Space Mono', monospace;
-    font-size: 12px; font-weight: 700; color: var(--accent);
-  }
-  .acc-strip {
-    background: var(--s2); border: 1px solid var(--border);
-    border-radius: 9px; padding: 8px 11px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .acc-lbl { font-size: 11px; color: var(--sub); font-weight: 600; }
-  .acc-val {
-    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
-    color: var(--accent);
-    background: rgba(0,232,122,0.08);
-    border: 1px solid rgba(0,232,122,0.15);
-    padding: 2px 9px; border-radius: 6px;
-  }
-
-  .retry-wrap { padding: 0 16px 14px; display: none; }
-  .retry-btn {
-    width: 100%; padding: 10px;
-    background: transparent;
-    border: 1px solid rgba(255,60,70,0.25);
-    color: #ff4060;
-    font-family: 'Syne', sans-serif;
     font-size: 12px; font-weight: 700;
-    border-radius: 9px; cursor: pointer; transition: all 0.2s;
+    color: var(--green);
   }
-  .retry-btn:hover { background: rgba(255,60,70,0.07); border-color: #ff4060; }
+  .acc-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid var(--green-border);
+  }
+  .acc-key { font-size: 11px; color: var(--gray-4); font-weight: 500; }
+  .acc-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; font-weight: 700; color: var(--green);
+  }
 
-  /* Input */
-  .field { margin-bottom: 16px; }
-  .field-lbl {
-    display: block;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--sub); margin-bottom: 8px;
+  /* Retry */
+  .retry-area { padding: 0 16px 14px; display: none; }
+  .retry-btn {
+    width: 100%; padding: 9px;
+    background: var(--white);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    border-radius: var(--r-sm); cursor: pointer;
+    transition: all 0.2s;
   }
-  .field-inp {
-    width: 100%;
-    background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 14px 15px; color: var(--text);
-    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
-    outline: none; transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-    -webkit-appearance: none;
-  }
-  .field-inp:focus {
-    border-color: rgba(0,232,122,0.35);
-    box-shadow: 0 0 0 3px rgba(0,232,122,0.07);
-    background: var(--s3);
-  }
-  .field-inp::placeholder { color: var(--sub); font-weight: 400; }
-  .field-inp.err { border-color: rgba(255,60,70,0.45) !important; animation: shake 0.38s ease; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 22%{transform:translateX(-5px)} 44%{transform:translateX(5px)} 66%{transform:translateX(-3px)} 88%{transform:translateX(3px)} }
-
-  /* Submit */
-  .submit-btn {
-    width: 100%; padding: 16px;
-    background: var(--accent); color: #04070a;
-    border: none; border-radius: var(--r);
-    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
-    letter-spacing: 0.3px; cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.15s, opacity 0.2s;
-    position: relative; overflow: hidden;
-  }
-  .submit-btn::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.13) 0%, transparent 55%);
-    pointer-events: none;
-  }
-  .submit-btn:hover:not(:disabled) {
-    background: #00ffa0;
-    box-shadow: 0 8px 28px rgba(0,232,122,0.35);
-    transform: translateY(-1px);
-  }
-  .submit-btn:active:not(:disabled) { transform: translateY(0); }
-  .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
-  .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-  /* Spinner */
-  .loader {
-    width: 15px; height: 15px;
-    border: 2px solid rgba(0,0,0,0.25);
-    border-top-color: #04070a;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Rotating arc in detect icon */
-  .arc-spin { animation: spin 1.1s linear infinite; transform-origin: center; }
+  .retry-btn:hover { background: var(--red-light); }
 
   /* Divider */
-  .div { height: 1px; background: var(--border); margin: 18px 0; }
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* Input */
+  .label {
+    display: block;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--gray-3); margin-bottom: 8px;
+  }
+  .input {
+    width: 100%;
+    background: var(--gray-7);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 13px 14px;
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    margin-bottom: 12px;
+  }
+  .input:focus {
+    border-color: var(--black);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+  }
+  .input::placeholder { color: var(--gray-5); font-weight: 400; }
+  .input.err { border-color: var(--red) !important; animation: shake 0.35s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+  /* Submit */
+  .submit {
+    width: 100%; padding: 14px;
+    background: var(--black); color: var(--white);
+    border: none; border-radius: var(--r-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit:hover:not(:disabled) { background: var(--gray-2); transform: translateY(-1px); }
+  .submit:active:not(:disabled) { transform: translateY(0); }
+  .submit:disabled { opacity: 0.28; cursor: not-allowed; transform: none !important; }
+
+  /* Spinner */
+  .spin {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: rotate 0.7s linear infinite;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  /* Arc spin for detect icon */
+  .arc { animation: rotate 1.1s linear infinite; transform-origin: 12px 12px; }
 
   /* Success */
-  .success-section { display: none; text-align: center; animation: sIn 0.55s cubic-bezier(0.22,1,0.36,1) both; }
-  .success-section.show { display: block; }
-  @keyframes sIn { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
+  .success-view { display: none; text-align: center; animation: fadeUp 0.45s ease both; }
+  .success-view.show { display: block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
-  .s-ring {
-    width: 80px; height: 80px; margin: 0 auto 18px;
+  .check-ring {
+    width: 72px; height: 72px;
     border-radius: 50%;
-    border: 2px solid var(--accent);
-    background: rgba(0,232,122,0.07);
+    border: 1.5px solid var(--green-border);
+    background: var(--green-light);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 36px rgba(0,232,122,0.18);
-    animation: rPop 0.55s cubic-bezier(0.22,1,0.36,1);
+    margin: 0 auto 20px;
+    animation: pop 0.45s cubic-bezier(0.22,1,0.36,1);
   }
-  @keyframes rPop { 0%{transform:scale(0)} 60%{transform:scale(1.07)} 100%{transform:scale(1)} }
-  .s-ring svg { width: 36px; height: 36px; }
+  @keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.06)} 100%{transform:scale(1)} }
+  .check-ring svg { width: 32px; height: 32px; }
 
-  .s-title { font-size: 23px; font-weight: 800; color: var(--accent); margin-bottom: 7px; }
-  .s-sub { font-size: 13px; color: var(--sub); line-height: 1.65; margin-bottom: 18px; }
+  .s-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--black); margin-bottom: 6px; }
+  .s-desc { font-size: 13px; color: var(--gray-3); line-height: 1.6; margin-bottom: 20px; }
 
-  .s-data {
-    background: var(--s2); border: 1px solid var(--border); border-radius: 12px;
+  .data-box {
+    background: var(--gray-7);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
     padding: 14px 16px; text-align: left;
-    font-family: 'Space Mono', monospace; font-size: 11px; color: var(--sub); line-height: 1.9;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--gray-3);
+    line-height: 2;
   }
-  .s-data strong { color: var(--accent); }
+  .data-box b { color: var(--black); font-weight: 700; }
 
-  .again-btn {
-    width: 100%; margin-top: 14px; padding: 12px;
-    background: transparent; border: 1px solid var(--border); color: var(--sub);
-    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-    border-radius: 10px; cursor: pointer; transition: all 0.2s;
+  .back-btn {
+    width: 100%; margin-top: 12px; padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--gray-3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    border-radius: var(--r-sm); cursor: pointer;
+    transition: all 0.2s;
   }
-  .again-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .back-btn:hover { border-color: var(--gray-5); color: var(--black); }
 </style>
 </head>
 <body>
-
-<div class="ambient"></div>
-<div class="grid-bg"></div>
-
 <div class="page">
   <div class="card">
 
-    <div class="topbar">
-      <div class="brand">
-        <div class="brand-mark"></div>
-        <div class="brand-name">Geo<b>Track</b></div>
-      </div>
-      <div class="status-tag">
-        <span class="pulse-dot"></span>CHECK IN
+    <div class="card-header">
+      <div class="wordmark">GEO<span>TRACK</span></div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live
       </div>
     </div>
 
-    <div class="body">
+    <div class="card-body">
 
       <!-- FORM -->
-      <div id="formSection">
-        <div class="heading">Daftar Kehadiran</div>
-        <p class="sub">Masukkan nama anda. Lokasi dikesan secara automatik.</p>
+      <div id="formView">
+        <div class="title">Daftar Kehadiran</div>
+        <p class="desc">Masukkan nama anda. Lokasi akan dikesan secara automatik.</p>
 
         <!-- Location block -->
-        <div class="loc-block state-detecting" id="locBlock">
-          <div class="loc-head">
-            <div class="loc-ico" id="locIco">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round">
-                <circle class="arc-spin" cx="12" cy="12" r="9" stroke-dasharray="28 8"/>
+        <div class="loc-block detecting" id="locBlock">
+          <div class="loc-row">
+            <div class="loc-icon" id="locIcon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:#1d4ed8">
+                <circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="30 6"/>
               </svg>
             </div>
-            <div class="loc-info">
-              <div class="loc-title-text" id="locTitle">Mengesan lokasi...</div>
-              <div class="loc-desc-text" id="locDesc">Sila benarkan akses lokasi apabila diminta</div>
+            <div class="loc-text">
+              <div class="loc-title" id="locTitle">Mengesan lokasi...</div>
+              <div class="loc-sub" id="locSub">Benarkan akses lokasi apabila diminta</div>
             </div>
           </div>
 
-          <div class="coords-area" id="coordsArea">
-            <div class="coords-grid">
-              <div class="coord-chip">
-                <div class="coord-lbl">Latitude</div>
-                <div class="coord-val" id="latVal">—</div>
+          <div class="coords-panel" id="coordsPanel">
+            <div class="coords-row">
+              <div class="coord-item">
+                <span class="coord-key">Latitude</span>
+                <span class="coord-val" id="latVal">—</span>
               </div>
-              <div class="coord-chip">
-                <div class="coord-lbl">Longitude</div>
-                <div class="coord-val" id="lngVal">—</div>
+              <div class="coord-item">
+                <span class="coord-key">Longitude</span>
+                <span class="coord-val" id="lngVal">—</span>
               </div>
             </div>
-            <div class="acc-strip">
-              <span class="acc-lbl">Accuracy</span>
+            <div class="acc-row">
+              <span class="acc-key">Accuracy</span>
               <span class="acc-val" id="accVal">—</span>
             </div>
           </div>
 
-          <div class="retry-wrap" id="retryWrap">
-            <button class="retry-btn" onclick="startDetect()">Cuba Semula</button>
+          <div class="retry-area" id="retryArea">
+            <button class="retry-btn" onclick="startDetect()">Cuba semula</button>
           </div>
         </div>
 
-        <div class="div"></div>
+        <div class="sep"></div>
 
-        <div class="field">
-          <label class="field-lbl" for="nameInp">Nama Penuh</label>
-          <input type="text" class="field-inp" id="nameInp" placeholder="Masukkan nama anda..." autocomplete="name" />
-        </div>
+        <label class="label" for="nameInp">Nama penuh</label>
+        <input type="text" class="input" id="nameInp" placeholder="Nama anda..." autocomplete="name" />
 
-        <button class="submit-btn" id="submitBtn" onclick="submitData()" disabled>
-          <div class="btn-inner" id="btnInner">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Hantar Check In</span>
+        <button class="submit" id="submitBtn" onclick="submit()" disabled>
+          <div id="btnContent" style="display:flex;align-items:center;gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Hantar</span>
           </div>
         </button>
       </div>
 
       <!-- SUCCESS -->
-      <div class="success-section" id="successSection">
-        <div class="s-ring">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="success-view" id="successView">
+        <div class="check-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
         <div class="s-title">Check In Berjaya</div>
-        <p class="s-sub">Terima kasih. Lokasi anda telah direkodkan.</p>
-        <div class="s-data" id="sData"></div>
-        <button class="again-btn" onclick="resetForm()">Kembali / Check in lain</button>
+        <p class="s-desc">Lokasi anda telah direkodkan.</p>
+        <div class="data-box" id="dataBox"></div>
+        <button class="back-btn" onclick="reset()">Kembali</button>
       </div>
 
     </div>
@@ -429,60 +402,51 @@
   const db = getFirestore(app);
   let loc = null;
 
-  const SVG_SPIN = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"><circle class="arc-spin" cx="12" cy="12" r="9" stroke-dasharray="28 8"/></svg>`;
-  const SVG_PIN  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-  const SVG_ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="#ff4060" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+  const ICON_SPIN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:#1d4ed8"><circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="30 6"/></svg>`;
+  const ICON_PIN  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const ICON_ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
-  window.startDetect = function() {
+  window.startDetect = function () {
     loc = null;
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('coordsArea').classList.remove('show');
-    document.getElementById('retryWrap').style.display = 'none';
-    setLocState('detecting', SVG_SPIN, 'Mengesan lokasi...', 'Sila benarkan akses lokasi apabila diminta');
+    document.getElementById('coordsPanel').classList.remove('show');
+    document.getElementById('retryArea').style.display = 'none';
+    setState('detecting', ICON_SPIN, 'Mengesan lokasi...', 'Benarkan akses lokasi apabila diminta');
 
     if (!navigator.geolocation) {
-      setLocState('error', SVG_ERR, 'Tidak disokong', 'Browser anda tidak menyokong Geolocation API');
-      document.getElementById('retryWrap').style.display = 'block';
+      setState('error', ICON_ERR, 'Tidak disokong', 'Browser anda tidak menyokong Geolocation');
+      document.getElementById('retryArea').style.display = 'block';
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
+      ({ coords: { latitude, longitude, accuracy } }) => {
         loc = { latitude, longitude, accuracy };
-
         document.getElementById('latVal').textContent = latitude.toFixed(6);
         document.getElementById('lngVal').textContent = longitude.toFixed(6);
         document.getElementById('accVal').textContent = `±${Math.round(accuracy)} m`;
-        document.getElementById('coordsArea').classList.add('show');
-
-        setLocState('success', SVG_PIN, 'Lokasi ditemui', `Accuracy ±${Math.round(accuracy)} m`);
+        document.getElementById('coordsPanel').classList.add('show');
+        setState('success', ICON_PIN, 'Lokasi ditemui', `Accuracy ±${Math.round(accuracy)} m`);
         document.getElementById('submitBtn').disabled = false;
         document.getElementById('nameInp').focus();
       },
       (err) => {
-        let msg = '';
-        switch(err.code) {
-          case 1: msg = 'Permission ditolak. Benarkan akses lokasi di tetapan browser.'; break;
-          case 2: msg = 'Lokasi tidak dapat dikesan. Pastikan GPS aktif.'; break;
-          case 3: msg = 'Masa tamat. Sila cuba semula.'; break;
-          default: msg = 'Ralat tidak diketahui.';
-        }
-        setLocState('error', SVG_ERR, 'Gagal mengesan', msg);
-        document.getElementById('retryWrap').style.display = 'block';
+        const msgs = ['', 'Permission ditolak. Benarkan akses lokasi di tetapan browser.', 'Lokasi tidak dapat dikesan. Pastikan GPS aktif.', 'Masa tamat. Cuba semula.'];
+        setState('error', ICON_ERR, 'Gagal mengesan', msgs[err.code] || 'Ralat tidak diketahui');
+        document.getElementById('retryArea').style.display = 'block';
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
-  function setLocState(state, icon, title, desc) {
-    document.getElementById('locBlock').className = `loc-block state-${state}`;
-    document.getElementById('locIco').innerHTML = icon;
+  function setState(state, icon, title, sub) {
+    document.getElementById('locBlock').className = `loc-block ${state}`;
+    document.getElementById('locIcon').innerHTML = icon;
     document.getElementById('locTitle').textContent = title;
-    document.getElementById('locDesc').textContent = desc;
+    document.getElementById('locSub').textContent = sub;
   }
 
-  window.submitData = async function() {
+  window.submit = async function () {
     const name = document.getElementById('nameInp').value.trim();
     if (!name) {
       const inp = document.getElementById('nameInp');
@@ -494,52 +458,48 @@
     if (!loc) return;
 
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('btnInner').innerHTML = '<div class="loader"></div><span>Menghantar...</span>';
+    document.getElementById('btnContent').innerHTML = '<div class="spin"></div><span>Menghantar...</span>';
 
     try {
       await addDoc(collection(db, 'locations'), {
-        name,
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        accuracy: loc.accuracy,
-        timestamp: serverTimestamp(),
-        source: 'qr'
+        name, latitude: loc.latitude, longitude: loc.longitude,
+        accuracy: loc.accuracy, timestamp: serverTimestamp(), source: 'qr'
       });
 
-      document.getElementById('sData').innerHTML =
-        `<strong>Nama</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${esc(name)}<br>` +
-        `<strong>Latitude</strong>&nbsp;&nbsp;&nbsp;${loc.latitude.toFixed(6)}<br>` +
-        `<strong>Longitude</strong>&nbsp;${loc.longitude.toFixed(6)}<br>` +
-        `<strong>Accuracy</strong>&nbsp;&nbsp;±${Math.round(loc.accuracy)} m<br>` +
-        `<strong>Masa</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${new Date().toLocaleString('ms-MY')}`;
+      document.getElementById('dataBox').innerHTML =
+        `<b>Nama</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${esc(name)}<br>` +
+        `<b>Latitude</b>&nbsp;&nbsp;&nbsp;${loc.latitude.toFixed(6)}<br>` +
+        `<b>Longitude</b>&nbsp;${loc.longitude.toFixed(6)}<br>` +
+        `<b>Accuracy</b>&nbsp;&nbsp;±${Math.round(loc.accuracy)} m<br>` +
+        `<b>Masa</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${new Date().toLocaleString('ms-MY')}`;
 
-      document.getElementById('formSection').style.display = 'none';
-      document.getElementById('successSection').classList.add('show');
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').classList.add('show');
 
-    } catch(e) {
-      setLocState('error', SVG_ERR, 'Gagal menghantar', e.message);
-      document.getElementById('retryWrap').style.display = 'block';
+    } catch (e) {
+      setState('error', ICON_ERR, 'Gagal menghantar', e.message);
+      document.getElementById('retryArea').style.display = 'block';
       document.getElementById('submitBtn').disabled = false;
-      document.getElementById('btnInner').innerHTML =
-        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Hantar Check In</span>';
+      document.getElementById('btnContent').innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Hantar</span>';
     }
   };
 
-  window.resetForm = function() {
+  window.reset = function () {
     document.getElementById('nameInp').value = '';
-    document.getElementById('formSection').style.display = 'block';
-    document.getElementById('successSection').classList.remove('show');
+    document.getElementById('formView').style.display = 'block';
+    document.getElementById('successView').classList.remove('show');
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('btnInner').innerHTML =
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Hantar Check In</span>';
+    document.getElementById('btnContent').innerHTML =
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Hantar</span>';
     loc = null;
     startDetect();
   };
 
-  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   document.getElementById('nameInp').addEventListener('keydown', e => {
-    if (e.key === 'Enter') window.submitData();
+    if (e.key === 'Enter') window.submit();
   });
 
   startDetect();
