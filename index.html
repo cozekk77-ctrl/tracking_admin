@@ -4,147 +4,215 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GeoTrack — Check In</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --bg:      #0c0c0c;
     --s1:      #111111;
-    --s2:      #1a1a1a;
-    --s3:      #222222;
-    --s4:      #2a2a2a;
-    --border:  #2e2e2e;
-    --border2: #3a3a3a;
+    --s2:      #161616;
+    --s3:      #1e1e1e;
+    --s4:      #262626;
+    --border:  #2a2a2a;
+    --border2: #383838;
     --text:    #f0f0f0;
     --sub:     #888888;
-    --faint:   #555555;
-    --green:      #22c55e;
-    --green-dim:  rgba(34,197,94,0.12);
-    --green-b:    rgba(34,197,94,0.25);
-    --blue:       #60a5fa;
-    --blue-dim:   rgba(96,165,250,0.12);
-    --blue-b:     rgba(96,165,250,0.25);
-    --red:        #f87171;
-    --red-dim:    rgba(248,113,113,0.12);
-    --red-b:      rgba(248,113,113,0.25);
-    --r:    10px;
-    --r-lg: 16px;
+    --faint:   #505050;
+    --green:   #22c55e;
+    --green-dim: rgba(34,197,94,0.08);
+    --green-b:   rgba(34,197,94,0.2);
+    --blue:    #60a5fa;
+    --blue-dim:  rgba(96,165,250,0.08);
+    --blue-b:    rgba(96,165,250,0.2);
+    --red:     #f87171;
+    --red-dim:   rgba(248,113,113,0.08);
+    --red-b:     rgba(248,113,113,0.2);
+    --r:  8px;
+    --rl: 12px;
   }
 
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
 
-  .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+  .page {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 20px;
+  }
 
   .card {
     width: 100%; max-width: 380px;
     background: var(--s1);
     border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    border-radius: var(--rl);
     overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 24px 64px rgba(0,0,0,0.6);
-    animation: up 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: up 0.4s cubic-bezier(0.22,1,0.36,1) both;
   }
-  @keyframes up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
   /* Header */
   .card-head {
-    padding: 18px 22px;
+    padding: 14px 20px;
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
   }
-  .wordmark { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; color: var(--text); }
-  .wordmark span { color: var(--faint); font-weight: 400; }
+  .site-name { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .site-name span { color: var(--faint); font-weight: 400; }
 
-  .live-row { display: flex; align-items: center; gap: 6px; }
-  .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+  .live-row { display: flex; align-items: center; gap: 5px; }
+  .live-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-  .live-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--green); }
+  .live-text { font-size: 11px; font-weight: 500; color: var(--green); }
 
   /* Body */
-  .card-body { padding: 26px 22px; }
+  .card-body { padding: 24px 20px; }
 
-  .title { font-size: 21px; font-weight: 700; letter-spacing: -0.4px; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
-  .desc  { font-size: 13px; color: var(--sub); line-height: 1.65; margin-bottom: 24px; }
+  .title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); margin-bottom: 5px; line-height: 1.3; }
+  .desc  { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
 
   /* Location block */
-  .loc-block { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 20px; transition: border-color 0.25s; }
+  .loc-block {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    margin-bottom: 18px;
+    transition: border-color 0.25s;
+  }
   .loc-block.detecting { border-color: var(--blue-b); }
   .loc-block.success   { border-color: var(--green-b); }
   .loc-block.error     { border-color: var(--red-b); }
 
-  .loc-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--s2); }
-  .loc-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s; }
+  .loc-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--s2);
+  }
+  .loc-icon {
+    width: 32px; height: 32px; border-radius: var(--r);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.25s;
+  }
   .detecting .loc-icon { background: var(--blue-dim); }
   .success   .loc-icon { background: var(--green-dim); }
   .error     .loc-icon { background: var(--red-dim); }
-  .loc-icon svg { width: 16px; height: 16px; }
+  .loc-icon svg { width: 15px; height: 15px; }
 
   .loc-info { flex: 1; min-width: 0; }
-  .loc-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; transition: color 0.25s; }
+  .loc-title { font-size: 12px; font-weight: 500; margin-bottom: 1px; transition: color 0.25s; }
   .detecting .loc-title { color: var(--blue); }
   .success   .loc-title { color: var(--green); }
   .error     .loc-title { color: var(--red); }
   .loc-sub   { font-size: 11px; color: var(--faint); line-height: 1.4; }
 
   /* Coords */
-  .coords-panel { padding: 12px 16px 14px; border-top: 1px solid var(--border); display: none; }
+  .coords-panel { padding: 10px 14px 12px; border-top: 1px solid var(--border); display: none; }
   .coords-panel.show { display: block; }
   .coords-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .coord-item { display: flex; flex-direction: column; gap: 3px; }
-  .coord-key { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--faint); }
+  .coord-item { display: flex; flex-direction: column; gap: 2px; }
+  .coord-key { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); }
   .coord-val { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--green); }
   .acc-row { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); }
-  .acc-key { font-size: 11px; color: var(--sub); font-weight: 500; }
-  .acc-val { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--green); }
+  .acc-key { font-size: 11px; color: var(--sub); }
+  .acc-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--green); font-weight: 700; }
 
   /* Retry */
-  .retry-area { padding: 0 16px 14px; display: none; }
-  .retry-btn { width: 100%; padding: 9px; background: var(--red-dim); border: 1px solid var(--red-b); color: var(--red); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-  .retry-btn:hover { background: rgba(248,113,113,0.2); }
+  .retry-area { padding: 0 14px 12px; display: none; }
+  .retry-btn {
+    width: 100%; padding: 8px;
+    background: var(--red-dim); border: 1px solid var(--red-b);
+    color: var(--red); font-family: 'Inter', sans-serif;
+    font-size: 12px; font-weight: 500;
+    border-radius: var(--r); cursor: pointer; transition: all 0.15s;
+  }
+  .retry-btn:hover { background: rgba(248,113,113,0.14); }
 
-  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+  .sep { height: 1px; background: var(--border); margin: 18px 0; }
 
   /* Input */
-  .label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--sub); margin-bottom: 8px; }
+  .label {
+    display: block; font-size: 11px; font-weight: 500;
+    color: var(--faint); margin-bottom: 7px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
   .input {
-    width: 100%; background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 13px 14px; color: var(--text); font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 500; outline: none; -webkit-appearance: none;
+    width: 100%;
+    background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 11px 13px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400;
+    outline: none; -webkit-appearance: none;
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     margin-bottom: 12px;
   }
-  .input:focus { border-color: var(--border2); background: var(--s3); box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
-  .input::placeholder { color: var(--faint); font-weight: 400; }
-  .input.err { border-color: var(--red-b) !important; animation: shake 0.35s ease; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .input:focus { border-color: var(--border2); background: var(--s3); box-shadow: 0 0 0 3px rgba(255,255,255,0.03); }
+  .input::placeholder { color: var(--faint); }
+  .input.err { border-color: var(--red-b) !important; animation: shake 0.3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
 
   /* Submit */
-  .submit { width: 100%; padding: 14px; background: var(--text); color: var(--bg); border: none; border-radius: var(--r); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s, opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .submit {
+    width: 100%; padding: 12px;
+    background: var(--text); color: var(--bg);
+    border: none; border-radius: var(--r);
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s, transform 0.15s, opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
   .submit:hover:not(:disabled) { background: #ffffff; transform: translateY(-1px); }
   .submit:active:not(:disabled) { transform: translateY(0); }
-  .submit:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
+  .submit:disabled { opacity: 0.22; cursor: not-allowed; transform: none !important; }
 
-  .spin { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.2); border-top-color: var(--bg); border-radius: 50%; animation: rot 0.7s linear infinite; }
+  .spin {
+    width: 13px; height: 13px;
+    border: 2px solid rgba(0,0,0,0.15);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: rot 0.6s linear infinite;
+  }
   @keyframes rot { to{transform:rotate(360deg)} }
-  .arc { animation: rot 1.1s linear infinite; transform-origin: 12px 12px; }
+  .arc { animation: rot 1s linear infinite; transform-origin: 12px 12px; }
 
   /* Success */
-  .success-view { display: none; text-align: center; animation: fadeUp 0.45s ease both; }
+  .success-view { display: none; text-align: center; animation: fadeUp 0.4s ease both; }
   .success-view.show { display: block; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-  .check-ring { width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--green-b); background: var(--green-dim); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; animation: pop 0.45s cubic-bezier(0.22,1,0.36,1); }
-  @keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.06)} 100%{transform:scale(1)} }
-  .check-ring svg { width: 32px; height: 32px; }
+  .check-ring {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 1px solid var(--green-b); background: var(--green-dim);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    animation: pop 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+  @keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.05)} 100%{transform:scale(1)} }
+  .check-ring svg { width: 28px; height: 28px; }
 
-  .s-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); margin-bottom: 6px; }
-  .s-desc  { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
+  .s-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); margin-bottom: 5px; }
+  .s-desc  { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 18px; }
 
-  .data-box { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; text-align: left; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--sub); line-height: 2; }
+  .data-box {
+    background: var(--s2); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 12px 14px; text-align: left;
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    color: var(--sub); line-height: 2;
+  }
   .data-box b { color: var(--text); font-weight: 700; }
 
-  .back-btn { width: 100%; margin-top: 12px; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--sub); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; border-radius: var(--r); cursor: pointer; transition: all 0.2s; }
+  .back-btn {
+    width: 100%; margin-top: 10px; padding: 11px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--sub); font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    border-radius: var(--r); cursor: pointer; transition: all 0.15s;
+  }
   .back-btn:hover { border-color: var(--border2); color: var(--text); }
 </style>
 </head>
@@ -153,10 +221,10 @@
   <div class="card">
 
     <div class="card-head">
-      <div class="wordmark">TRACK<span>ING</span></div>
+      <div class="site-name">GeoTrack <span>/ Check In</span></div>
       <div class="live-row">
         <div class="live-dot"></div>
-        <div class="live-label">Live</div>
+        <span class="live-text">Live</span>
       </div>
     </div>
 
@@ -170,7 +238,7 @@
           <div class="loc-row">
             <div class="loc-icon" id="locIcon">
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round">
-                <circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="30 6"/>
+                <circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="28 6"/>
               </svg>
             </div>
             <div class="loc-info">
@@ -205,8 +273,8 @@
         <input type="text" class="input" id="nameInp" placeholder="Nama anda..." autocomplete="name" />
 
         <button class="submit" id="submitBtn" onclick="doSubmit()" disabled>
-          <div id="btnContent" style="display:flex;align-items:center;gap:8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div id="btnContent" style="display:flex;align-items:center;gap:7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Submit</span>
           </div>
         </button>
@@ -244,20 +312,20 @@
   const db  = getFirestore(app);
   let loc   = null;
 
-  const SPIN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="30 6"/></svg>`;
-  const PIN_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-  const ERR_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-  const CHK_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const SPIN = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><circle class="arc" cx="12" cy="12" r="9" stroke-dasharray="28 6"/></svg>`;
+  const PIN  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const ERR  = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+  const CHK  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
   window.startDetect = function () {
     loc = null;
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('coordsPanel').classList.remove('show');
     document.getElementById('retryArea').style.display = 'none';
-    setState('detecting', SPIN_ICON, 'Mengesan lokasi...', 'Benarkan akses lokasi apabila diminta');
+    set('detecting', SPIN, 'Mengesan lokasi...', 'Benarkan akses lokasi apabila diminta');
 
     if (!navigator.geolocation) {
-      setState('error', ERR_ICON, 'Tidak disokong', 'Browser anda tidak menyokong Geolocation');
+      set('error', ERR, 'Tidak disokong', 'Browser anda tidak menyokong Geolocation');
       document.getElementById('retryArea').style.display = 'block';
       return;
     }
@@ -269,24 +337,24 @@
         document.getElementById('lngVal').textContent = longitude.toFixed(6);
         document.getElementById('accVal').textContent = `\u00b1${Math.round(accuracy)} m`;
         document.getElementById('coordsPanel').classList.add('show');
-        setState('success', PIN_ICON, 'Lokasi ditemui', `Accuracy \u00b1${Math.round(accuracy)} m`);
+        set('success', PIN, 'Lokasi ditemui', `Accuracy \u00b1${Math.round(accuracy)} m`);
         document.getElementById('submitBtn').disabled = false;
         document.getElementById('nameInp').focus();
       },
       (err) => {
         const msgs = ['', 'Permission ditolak. Benarkan akses lokasi di tetapan browser.', 'Lokasi tidak dapat dikesan. Pastikan GPS aktif.', 'Masa tamat. Cuba semula.'];
-        setState('error', ERR_ICON, 'Gagal mengesan', msgs[err.code] || 'Ralat tidak diketahui');
+        set('error', ERR, 'Gagal mengesan', msgs[err.code] || 'Ralat tidak diketahui');
         document.getElementById('retryArea').style.display = 'block';
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
-  function setState(state, icon, title, sub) {
-    document.getElementById('locBlock').className = `loc-block ${state}`;
-    document.getElementById('locIcon').innerHTML  = icon;
-    document.getElementById('locTitle').textContent = title;
-    document.getElementById('locSub').textContent   = sub;
+  function set(state, icon, title, sub) {
+    document.getElementById('locBlock').className    = `loc-block ${state}`;
+    document.getElementById('locIcon').innerHTML     = icon;
+    document.getElementById('locTitle').textContent  = title;
+    document.getElementById('locSub').textContent    = sub;
   }
 
   window.doSubmit = async function () {
@@ -295,7 +363,7 @@
       const inp = document.getElementById('nameInp');
       inp.classList.add('err');
       inp.focus();
-      setTimeout(() => inp.classList.remove('err'), 500);
+      setTimeout(() => inp.classList.remove('err'), 400);
       return;
     }
     if (!loc) return;
@@ -304,20 +372,26 @@
     document.getElementById('btnContent').innerHTML = '<div class="spin"></div><span>Menghantar...</span>';
 
     try {
-      await addDoc(collection(db, 'locations'), { name, latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, timestamp: serverTimestamp(), source: 'qr' });
+      await addDoc(collection(db, 'locations'), {
+        name, latitude: loc.latitude, longitude: loc.longitude,
+        accuracy: loc.accuracy, timestamp: serverTimestamp(), source: 'qr'
+      });
+
       document.getElementById('dataBox').innerHTML =
         `<b>Nama</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${esc(name)}<br>` +
         `<b>Latitude</b>&nbsp;&nbsp;&nbsp;${loc.latitude.toFixed(6)}<br>` +
         `<b>Longitude</b>&nbsp;${loc.longitude.toFixed(6)}<br>` +
         `<b>Accuracy</b>&nbsp;&nbsp;\u00b1${Math.round(loc.accuracy)} m<br>` +
         `<b>Masa</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${new Date().toLocaleString('ms-MY')}`;
+
       document.getElementById('formView').style.display = 'none';
       document.getElementById('successView').classList.add('show');
+
     } catch (e) {
-      setState('error', ERR_ICON, 'Gagal menghantar', e.message);
+      set('error', ERR, 'Gagal menghantar', e.message);
       document.getElementById('retryArea').style.display = 'block';
       document.getElementById('submitBtn').disabled = false;
-      document.getElementById('btnContent').innerHTML = CHK_ICON + '<span>Hantar</span>';
+      document.getElementById('btnContent').innerHTML = CHK + '<span>Hantar</span>';
     }
   };
 
@@ -326,7 +400,7 @@
     document.getElementById('formView').style.display = 'block';
     document.getElementById('successView').classList.remove('show');
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('btnContent').innerHTML = CHK_ICON + '<span>Hantar</span>';
+    document.getElementById('btnContent').innerHTML = CHK + '<span>Hantar</span>';
     loc = null;
     startDetect();
   };
