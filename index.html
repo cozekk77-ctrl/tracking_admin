@@ -2,445 +2,536 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GeoTrack</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoTrack — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0a0a0a; --surface: #111; --s2: #1a1a1a; --s3: #222;
+  --bg: #0a0a0a; --surface: #111; --s2: #161616; --s3: #1e1e1e;
   --border: #222; --border2: #333;
   --text: #f2f2f2; --sub: #666; --faint: #3a3a3a;
   --green: #3ecf8e; --green-b: rgba(62,207,142,0.2); --green-d: rgba(62,207,142,0.07);
   --blue: #5b9cf6; --blue-b: rgba(91,156,246,0.2); --blue-d: rgba(91,156,246,0.07);
   --red: #f16a6a; --red-b: rgba(241,106,106,0.2); --red-d: rgba(241,106,106,0.07);
+  --amber: #e6a817;
   --r: 10px;
 }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+html { background: var(--bg); }
+body { color: var(--text); font-family: 'Geist', system-ui, sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; }
 
-.page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
-
-.topbar { position: fixed; top: 0; left: 0; right: 0; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
-.brand { font-size: 13px; font-weight: 600; color: var(--sub); }
-.live { display: flex; align-items: center; gap: 7px; }
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 52px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
+.brand { font-size: 14px; font-weight: 600; color: var(--text); }
+.nav-r { display: flex; align-items: center; gap: 14px; }
+.conn { display: flex; align-items: center; gap: 6px; }
+.conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); transition: background 0.3s; }
+.conn-dot.on { background: var(--green); animation: blink 2s ease-in-out infinite; }
+.conn-dot.err { background: var(--red); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.conn-text { font-size: 12px; color: var(--sub); transition: color 0.3s; }
+.conn-text.on { color: var(--green); }
+.chip { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--sub); }
+.live-chip { display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; background: var(--green-d); border: 1px solid var(--green-b); }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
 .live-text { font-size: 11px; font-weight: 500; color: var(--green); }
 
-.card { width: 100%; max-width: 380px; animation: rise 0.5s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes rise { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.wrap { max-width: 1400px; margin: 0 auto; padding: 0 28px; }
 
-/* Step indicator */
-.steps { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
-.step { display: flex; align-items: center; gap: 6px; }
-.step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--faint); color: var(--sub); font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
-.step-num.active { background: var(--text); color: var(--bg); }
-.step-num.done   { background: var(--green); color: var(--bg); }
-.step-label { font-size: 11px; font-weight: 500; color: var(--faint); transition: color 0.3s; }
-.step-label.active { color: var(--sub); }
-.step-label.done   { color: var(--green); }
-.step-line { flex: 1; height: 1px; background: var(--border); }
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; padding: 24px 0 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; animation: up 0.4s ease both; transition: border-color 0.2s; }
+.stat:hover { border-color: var(--border2); }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.stat-label { font-size: 11px; font-weight: 500; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.stat-val   { font-size: 28px; font-weight: 700; letter-spacing: -1px; color: var(--text); line-height: 1; }
 
-.card-title { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; color: var(--text); margin-bottom: 6px; }
-.card-sub   { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 24px; }
+.tabs { display: flex; gap: 2px; padding: 18px 0 0; border-bottom: 1px solid var(--border); }
+.tab { padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
 
-/* location block */
-.loc { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 20px; transition: border-color 0.3s; }
-.loc.detecting { border-color: var(--blue-b); }
-.loc.success   { border-color: var(--green-b); }
-.loc.error     { border-color: var(--red-b); }
-.loc-top { padding: 12px 14px; background: var(--surface); display: flex; align-items: center; gap: 11px; }
-.loc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
-.detecting .loc-icon { background: var(--blue-d); }
-.success   .loc-icon { background: var(--green-d); }
-.error     .loc-icon { background: var(--red-d); }
-.loc-icon svg { width: 15px; height: 15px; }
-.loc-title { font-size: 13px; font-weight: 500; transition: color 0.3s; }
-.detecting .loc-title { color: var(--blue); }
-.success   .loc-title { color: var(--green); }
-.error     .loc-title { color: var(--red); }
-.loc-sub-text { font-size: 11px; color: var(--faint); margin-top: 1px; line-height: 1.4; }
-.spin { transform-origin: 12px 12px; animation: rot 0.9s linear infinite; }
-@keyframes rot { to { transform: rotate(360deg); } }
-.coords { border-top: 1px solid var(--border); padding: 11px 14px 12px; display: none; grid-template-columns: 1fr 1fr; gap: 10px; }
-.coords.show { display: grid; }
-.coord-label { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
-.coord-val   { font-size: 12px; font-weight: 500; color: var(--green); font-variant-numeric: tabular-nums; }
-.acc-row { grid-column: 1/-1; border-top: 1px solid var(--border); padding-top: 10px; display: flex; justify-content: space-between; }
-.acc-label { font-size: 11px; color: var(--sub); }
-.acc-val   { font-size: 12px; font-weight: 500; color: var(--green); }
-.retry-wrap { padding: 0 14px 12px; display: none; }
-.retry { width: 100%; padding: 8px; background: var(--red-d); border: 1px solid var(--red-b); color: var(--red); font-family: inherit; font-size: 12px; font-weight: 500; border-radius: 7px; cursor: pointer; }
-.retry:hover { background: rgba(241,106,106,0.13); }
+.tab-content { display: none; padding: 20px 0 48px; }
+.tab-content.show { display: block; }
 
-.sep { height: 1px; background: var(--border); margin-bottom: 20px; }
+/* ── CAMERA GRID ── */
+.cam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 
-.field-label { font-size: 11px; font-weight: 500; color: var(--sub); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; display: block; }
-.input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 15px; outline: none; -webkit-appearance: none; transition: border-color 0.2s, background 0.2s; margin-bottom: 14px; }
-.input:focus { border-color: var(--border2); background: var(--s2); }
-.input::placeholder { color: var(--faint); }
-.input.err { border-color: var(--red-b) !important; animation: shake 0.3s; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 30%{transform:translateX(-5px)} 70%{transform:translateX(5px)} }
+.cam-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  overflow: hidden; animation: cardIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+  transition: border-color 0.2s;
+}
+@keyframes cardIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+.cam-card:hover { border-color: var(--border2); }
 
-.submit { width: 100%; padding: 13px; background: var(--text); color: var(--bg); border: none; border-radius: var(--r); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.submit:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-.submit:disabled { opacity: 0.2; cursor: not-allowed; transform: none !important; }
-.spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.15); border-top-color: #000; border-radius: 50%; animation: rot 0.6s linear infinite; }
+.cam-video-wrap { position: relative; background: #000; aspect-ratio: 4/3; overflow: hidden; }
+.cam-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* === STREAMING VIEW === */
-.stream-view { display: none; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-.stream-view.show { display: block; }
+/* loading / waiting states */
+.cam-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.cam-placeholder svg { width: 28px; height: 28px; color: var(--faint); }
+.cam-placeholder p { font-size: 12px; color: var(--sub); }
+.cam-placeholder .dot-anim { display: flex; gap: 4px; }
+.cam-placeholder .dot-anim span { width: 5px; height: 5px; border-radius: 50%; background: var(--sub); animation: dotPulse 1.2s ease-in-out infinite; }
+.cam-placeholder .dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+.cam-placeholder .dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
 
-.stream-header { margin-bottom: 16px; }
-.stream-name { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
-.stream-status { font-size: 13px; color: var(--sub); display: flex; align-items: center; gap: 7px; }
-.stream-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--red); background: var(--red-d); border: 1px solid var(--red-b); padding: 3px 9px; border-radius: 20px; }
+.cam-overlay-tl { position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.6); border-radius: 5px; padding: 3px 8px; backdrop-filter: blur(4px); }
 .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 1.2s ease-in-out infinite; }
+.cam-overlay-tl span { font-size: 10px; font-weight: 600; color: #fff; }
+.cam-conn-state { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 5px; }
+.state-connecting { background: rgba(91,156,246,0.2); color: var(--blue); border: 1px solid rgba(91,156,246,0.3); }
+.state-live       { background: rgba(62,207,142,0.2); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+.state-error      { background: rgba(241,106,106,0.2); color: var(--red); border: 1px solid rgba(241,106,106,0.3); }
+.state-nocam      { background: rgba(100,100,100,0.2); color: var(--sub); border: 1px solid var(--border2); }
 
-/* camera preview */
-.cam-wrap { position: relative; border-radius: var(--r); overflow: hidden; background: #000; border: 1px solid var(--border); margin-bottom: 14px; aspect-ratio: 3/4; }
-#camVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
-.cam-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); display: flex; align-items: center; justify-content: space-between; }
-.cam-fps { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.5); }
-.cam-frames { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.5); }
+.cam-info { padding: 12px 14px 8px; }
+.cam-name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.cam-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cm-label { font-size: 10px; font-weight: 500; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.cm-val   { font-size: 11px; color: var(--text); font-variant-numeric: tabular-nums; }
+.cam-foot { padding: 8px 14px 12px; display: flex; gap: 6px; }
+.cf-btn { flex: 1; padding: 7px; border-radius: 7px; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.cf-btn svg { width: 12px; height: 12px; }
+.cf-call { background: var(--green-d); color: var(--green); border: 1px solid var(--green-b); }
+.cf-call:hover { background: rgba(62,207,142,0.14); }
+.cf-map  { background: var(--blue-d); color: var(--blue); border: 1px solid var(--blue-b); }
+.cf-map:hover { background: rgba(91,156,246,0.14); }
+.cf-hang { background: var(--red-d); color: var(--red); border: 1px solid var(--red-b); }
+.cf-hang:hover { background: rgba(241,106,106,0.14); }
 
-/* info row */
-.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.info-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 11px 13px; }
-.info-label { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-.info-val   { font-size: 12px; font-weight: 500; color: var(--sub); font-variant-numeric: tabular-nums; }
+.cam-empty { padding: 60px 20px; text-align: center; grid-column: 1/-1; }
+.cam-empty svg { width: 36px; height: 36px; color: var(--faint); margin: 0 auto 12px; display: block; }
+.cam-empty h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.cam-empty p  { font-size: 13px; color: var(--sub); line-height: 1.6; }
 
-.stop-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--sub); font-family: inherit; font-size: 13px; font-weight: 500; border-radius: var(--r); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
-.stop-btn:hover { border-color: var(--red-b); color: var(--red); }
+/* ── RECORDS ── */
+.records-wrap { display: grid; grid-template-columns: 1fr 290px; gap: 14px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; animation: up 0.4s ease both; }
+.panel-head { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.panel-title { font-size: 11px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: 0.6px; }
+.map-panel { display: flex; flex-direction: column; }
+#mapFrame { width: 100%; height: 300px; border: none; display: none; }
+.map-empty { height: 300px; background: var(--s2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.map-empty svg { width: 24px; height: 24px; color: var(--faint); }
+.map-empty p { font-size: 12px; color: var(--sub); }
+.map-foot { padding: 11px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.map-coord { font-size: 11px; color: var(--sub); flex: 1; }
 
-/* cam error */
-.cam-error { border: 1px solid var(--red-b); background: var(--red-d); border-radius: var(--r); padding: 14px; font-size: 12px; color: var(--red); text-align: center; margin-bottom: 14px; line-height: 1.6; }
+.table-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 140px; }
+.search-ic { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.search-ic svg { width: 12px; height: 12px; color: var(--sub); }
+.search-inp { width: 100%; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px 7px 28px; color: var(--text); font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.2s; }
+.search-inp:focus { border-color: var(--border2); }
+.search-inp::placeholder { color: var(--sub); }
+.btn { padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 5px; border: 1px solid var(--border2); background: transparent; color: var(--sub); }
+.btn svg { width: 12px; height: 12px; }
+.btn:hover { border-color: #555; color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 7px; }
+.btn-danger { color: var(--red); border-color: var(--red-b); }
+.btn-danger:hover { background: var(--red-d); }
+
+.tscroll { overflow-x: auto; max-height: 380px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th { font-size: 11px; font-weight: 500; color: var(--sub); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 1; text-transform: uppercase; letter-spacing: 0.4px; }
+tbody td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--s2); }
+.td-name { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.td-av { width: 26px; height: 26px; border-radius: 6px; background: var(--s3); color: var(--sub); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+.td-coord { font-size: 11px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.td-time  { font-size: 11px; color: var(--sub); }
+.td-num   { font-size: 11px; color: var(--sub); }
+.acc-good { color: var(--green); } .acc-mid { color: var(--amber); } .acc-bad { color: var(--red); }
+.src-tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 5px; }
+.src-ci  { background: var(--green-d); color: var(--green); border: 1px solid var(--green-b); }
+.src-web { background: var(--blue-d); color: var(--blue); border: 1px solid var(--blue-b); }
+.tr-new td { background: rgba(62,207,142,0.02) !important; }
+.acts { display: flex; gap: 5px; }
+.act { font-family: inherit; font-size: 11px; font-weight: 500; padding: 4px 9px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+.act-map { background: var(--blue-d); color: var(--blue); border: 1px solid var(--blue-b); }
+.act-map:hover { background: rgba(91,156,246,0.14); }
+.act-del { background: var(--red-d); color: var(--red); border: 1px solid var(--red-b); }
+.act-del:hover { background: rgba(241,106,106,0.14); }
+.empty-row { padding: 40px; text-align: center; font-size: 13px; color: var(--sub); }
+.empty-row svg { width: 22px; height: 22px; margin: 0 auto 10px; display: block; opacity: 0.2; }
+
+.feed-body { overflow-y: auto; max-height: 320px; }
+.feed-item { padding: 11px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.15s; }
+.feed-item:hover { background: var(--s2); }
+.feed-item:last-child { border-bottom: none; }
+.feed-av { width: 30px; height: 30px; border-radius: 7px; background: var(--s3); border: 1px solid var(--border2); color: var(--sub); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+.feed-name  { font-size: 13px; font-weight: 500; }
+.feed-coord { font-size: 10px; color: var(--sub); margin-top: 1px; }
+.feed-time  { font-size: 10px; color: var(--sub); margin-left: auto; white-space: nowrap; }
+.new-tag { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--green-d); color: var(--green); border: 1px solid var(--green-b); }
+.feed-empty { padding: 32px 16px; text-align: center; font-size: 12px; color: var(--sub); }
+
+.toast-wrap { position: fixed; top: 64px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 7px; }
+.toast { background: var(--s3); border: 1px solid var(--border2); border-radius: var(--r); padding: 10px 14px; font-size: 12px; color: var(--text); min-width: 210px; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: tin 0.2s ease; }
+@keyframes tin { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
+.toast.ok { border-color: var(--green-b); } .toast.info { border-color: var(--blue-b); } .toast.err { border-color: var(--red-b); }
+.t-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.toast.ok .t-dot { background: var(--green); } .toast.info .t-dot { background: var(--blue); } .toast.err .t-dot { background: var(--red); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+@media(max-width:1040px) { .records-wrap { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px) { .stats { grid-template-columns: repeat(2,1fr); } .wrap { padding: 0 16px; } nav { padding: 0 16px; } }
 </style>
 </head>
 <body>
-<div class="topbar">
+<div class="toast-wrap" id="toastWrap"></div>
+
+<nav>
   <div class="brand">GeoTrack</div>
-  <div class="live"><div class="live-dot"></div><span class="live-text">Live</span></div>
-</div>
+  <div class="nav-r">
+    <div class="conn"><div class="conn-dot" id="connDot"></div><span class="conn-text" id="connText">Connecting</span></div>
+    <div class="live-chip"><div class="live-dot"></div><span class="live-text">Live</span></div>
+    <div class="chip" id="totalChip">0 rekod</div>
+  </div>
+</nav>
 
-<div class="page">
-  <div class="card">
+<div class="wrap">
+  <div class="stats">
+    <div class="stat" style="animation-delay:0s">   <div class="stat-label">Total Rekod</div> <div class="stat-val" id="s1">0</div></div>
+    <div class="stat" style="animation-delay:.05s"><div class="stat-label">Hari Ini</div>     <div class="stat-val" id="s2">0</div></div>
+    <div class="stat" style="animation-delay:.1s"> <div class="stat-label">Live Camera</div>  <div class="stat-val" id="s3" style="color:var(--green)">0</div></div>
+    <div class="stat" style="animation-delay:.15s"><div class="stat-label">1 Jam Lepas</div>  <div class="stat-val" id="s4">0</div></div>
+  </div>
 
-    <!-- FORM VIEW -->
-    <div id="formView">
-      <div class="steps">
-        <div class="step">
-          <div class="step-num active" id="sn1">1</div>
-          <div class="step-label active" id="sl1">GPS</div>
-        </div>
-        <div class="step-line"></div>
-        <div class="step">
-          <div class="step-num" id="sn2">2</div>
-          <div class="step-label" id="sl2">Nama</div>
-        </div>
-        <div class="step-line"></div>
-        <div class="step">
-          <div class="step-num" id="sn3">3</div>
-          <div class="step-label" id="sl3">Camera</div>
-        </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-cam" onclick="switchTab('cam')">Live Camera</div>
+    <div class="tab" id="tab-rec" onclick="switchTab('rec')">Rekod Check In</div>
+  </div>
+
+  <!-- CAM TAB -->
+  <div class="tab-content show" id="content-cam">
+    <div class="cam-grid" id="camGrid">
+      <div class="cam-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <h3>Tiada pengguna aktif</h3>
+        <p>Apabila seseorang buka halaman check in,<br>feed live akan muncul di sini.</p>
       </div>
-
-      <div class="card-title">Check In</div>
-      <p class="card-sub">Lokasi dan camera anda akan diaktifkan semasa check in.</p>
-
-      <!-- GPS -->
-      <div class="loc detecting" id="locBlock">
-        <div class="loc-top">
-          <div class="loc-icon" id="locIcon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#5b9cf6" stroke-width="2" stroke-linecap="round">
-              <circle class="spin" cx="12" cy="12" r="9" stroke-dasharray="26 6"/>
-            </svg>
-          </div>
-          <div>
-            <div class="loc-title" id="locTitle">Mengesan lokasi...</div>
-            <div class="loc-sub-text" id="locSub">Benarkan akses GPS apabila diminta</div>
-          </div>
-        </div>
-        <div class="coords" id="coordsPanel">
-          <div><div class="coord-label">Latitude</div><div class="coord-val" id="cLat">—</div></div>
-          <div><div class="coord-label">Longitude</div><div class="coord-val" id="cLng">—</div></div>
-          <div class="acc-row"><span class="acc-label">Accuracy</span><span class="acc-val" id="cAcc">—</span></div>
-        </div>
-        <div class="retry-wrap" id="retryWrap">
-          <button class="retry" onclick="detect()">Cuba semula</button>
-        </div>
-      </div>
-
-      <div class="sep"></div>
-
-      <label class="field-label">Nama penuh</label>
-      <input type="text" class="input" id="nameInp" placeholder="Nama anda..." autocomplete="name">
-
-      <button class="submit" id="submitBtn" onclick="doSubmit()" disabled>
-        <div id="btnInner" style="display:flex;align-items:center;gap:8px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Hantar & Aktif Camera
-        </div>
-      </button>
     </div>
+  </div>
 
-    <!-- STREAMING VIEW -->
-    <div class="stream-view" id="streamView">
-      <div class="stream-header">
-        <div class="stream-name" id="streamName">—</div>
-        <div class="stream-status">
-          <div class="stream-badge"><div class="rec-dot"></div> LIVE</div>
-          <span id="streamSub">Admin sedang memantau</span>
+  <!-- RECORDS TAB -->
+  <div class="tab-content" id="content-rec">
+    <div class="records-wrap">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="panel map-panel">
+          <div class="panel-head"><span class="panel-title">Peta</span><span class="chip" id="mapLabel">—</span></div>
+          <div class="map-empty" id="mapEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            <p>Pilih rekod untuk papar lokasi</p>
+          </div>
+          <iframe id="mapFrame" allowfullscreen></iframe>
+          <div class="map-foot">
+            <span class="map-coord" id="mapCoord">—</span>
+            <button class="btn btn-sm" onclick="openGmaps()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Google Maps
+            </button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Rekod</span></div>
+          <div class="table-bar">
+            <div class="search-wrap">
+              <div class="search-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <input class="search-inp" id="searchInp" placeholder="Cari nama..." oninput="renderTable()">
+            </div>
+            <button class="btn" onclick="exportCSV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV</button>
+            <button class="btn" onclick="exportJSON()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>JSON</button>
+            <button class="btn btn-danger" onclick="clearAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Padam Semua</button>
+          </div>
+          <div class="tscroll">
+            <table>
+              <thead><tr><th>#</th><th>Nama</th><th>Koordinat</th><th>Accuracy</th><th>Sumber</th><th>Masa</th><th></th></tr></thead>
+              <tbody id="tableBody"><tr><td colspan="7"><div class="empty-row">Menghubungi pangkalan data...</div></td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
-
-      <div class="cam-wrap" id="camWrap">
-        <video id="camVideo" autoplay playsinline muted></video>
-        <div class="cam-overlay">
-          <span class="cam-fps" id="fpsLabel">— fps</span>
-          <span class="cam-frames" id="frameCount">0 frames</span>
+      <div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Aktiviti</span><span class="chip" id="feedChip">0 baru</span></div>
+          <div class="feed-body" id="feedBody"><div class="feed-empty">Menunggu check in...</div></div>
         </div>
       </div>
-
-      <div id="camErrorBox" class="cam-error" style="display:none"></div>
-
-      <div class="info-row">
-        <div class="info-box"><div class="info-label">Koordinat</div><div class="info-val" id="sCoord">—</div></div>
-        <div class="info-box"><div class="info-label">Masa Check In</div><div class="info-val" id="sTime">—</div></div>
-      </div>
-
-      <button class="stop-btn" onclick="stopSession()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-        Henti Session
-      </button>
     </div>
-
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getDatabase, ref, set, onDisconnect, serverTimestamp as rtdbTS } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+import { getFirestore, collection, onSnapshot, deleteDoc, doc, setDoc, query, orderBy, where, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const fbConfig = {
+const db = getFirestore(initializeApp({
   apiKey: "AIzaSyAKEBjSdoLFCgGJFFdLIzP0-_Xf_VK2Jtk",
   authDomain: "trackingapps-fb953.firebaseapp.com",
   projectId: "trackingapps-fb953",
   storageBucket: "trackingapps-fb953.firebasestorage.app",
-  messagingSenderId: "803582755154",
-  appId: "1:803582755164:web:6f6d90970b5859c2fbc199",
-  databaseURL: "https://trackingapps-fb953-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
+  messagingSenderId: "803582755164",
+  appId: "1:803582755164:web:6f6d90970b5859c2fbc199"
+}));
 
-const app  = initializeApp(fbConfig);
-const db   = getFirestore(app);
-const rtdb = getDatabase(app);
-
-let loc = null, sessionId = null, streamInterval = null, camStream = null;
-let frameCount = 0, lastFpsTime = Date.now(), fpsCount = 0;
-
-// ── Step indicator ────────────────────────────────
-function setStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const num = document.getElementById(`sn${i}`);
-    const lbl = document.getElementById(`sl${i}`);
-    if (i < n)  { num.className = 'step-num done';   lbl.className = 'step-label done';   num.innerHTML = '✓'; }
-    if (i === n) { num.className = 'step-num active'; lbl.className = 'step-label active'; num.textContent = i; }
-    if (i > n)  { num.className = 'step-num';         lbl.className = 'step-label';        num.textContent = i; }
+// ── Admin Peer ────────────────────────────────
+const adminPeer = new Peer({
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
   }
-}
-
-// ── GPS ──────────────────────────────────────────
-const ICONS = {
-  spin: `<svg viewBox="0 0 24 24" fill="none" stroke="#5b9cf6" stroke-width="2" stroke-linecap="round"><circle class="spin" cx="12" cy="12" r="9" stroke-dasharray="26 6"/></svg>`,
-  pin:  `<svg viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-  err:  `<svg viewBox="0 0 24 24" fill="none" stroke="#f16a6a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
-};
-
-function setLoc(state, icon, title, sub) {
-  document.getElementById('locBlock').className    = `loc ${state}`;
-  document.getElementById('locIcon').innerHTML     = icon;
-  document.getElementById('locTitle').textContent  = title;
-  document.getElementById('locSub').textContent    = sub;
-}
-
-window.detect = function () {
-  loc = null;
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('coordsPanel').classList.remove('show');
-  document.getElementById('retryWrap').style.display = 'none';
-  setLoc('detecting', ICONS.spin, 'Mengesan lokasi...', 'Benarkan akses GPS apabila diminta');
-  setStep(1);
-
-  if (!navigator.geolocation) {
-    setLoc('error', ICONS.err, 'Tidak disokong', 'Browser anda tidak menyokong GPS');
-    document.getElementById('retryWrap').style.display = 'block'; return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    ({ coords: { latitude, longitude, accuracy } }) => {
-      loc = { latitude, longitude, accuracy };
-      document.getElementById('cLat').textContent = latitude.toFixed(6);
-      document.getElementById('cLng').textContent = longitude.toFixed(6);
-      document.getElementById('cAcc').textContent = `±${Math.round(accuracy)} m`;
-      document.getElementById('coordsPanel').classList.add('show');
-      setLoc('success', ICONS.pin, 'Lokasi ditemui', `Ketepatan ±${Math.round(accuracy)} m`);
-      document.getElementById('submitBtn').disabled = false;
-      setStep(2);
-      document.getElementById('nameInp').focus();
-    },
-    (e) => {
-      const msgs = ['','Permission ditolak.','GPS tidak dapat dikesan.','Masa tamat.'];
-      setLoc('error', ICONS.err, 'Gagal mengesan', msgs[e.code] || 'Ralat tidak diketahui');
-      document.getElementById('retryWrap').style.display = 'block';
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
-};
-
-// ── Submit ────────────────────────────────────────
-window.doSubmit = async function () {
-  const name = document.getElementById('nameInp').value.trim();
-  if (!name) {
-    const el = document.getElementById('nameInp');
-    el.classList.add('err'); el.focus();
-    setTimeout(() => el.classList.remove('err'), 400); return;
-  }
-  if (!loc) return;
-
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('btnInner').innerHTML = '<div class="spinner"></div> Mendaftar...';
-  setStep(3);
-
-  try {
-    // Save to Firestore
-    const docRef = await addDoc(collection(db, 'locations'), {
-      name, latitude: loc.latitude, longitude: loc.longitude,
-      accuracy: loc.accuracy, timestamp: serverTimestamp(), source: 'checkin'
-    });
-    sessionId = docRef.id;
-
-    // Create RTDB presence node
-    const presRef = ref(rtdb, `presence/${sessionId}`);
-    await set(presRef, {
-      name, sessionId,
-      latitude: loc.latitude, longitude: loc.longitude,
-      online: true, joinedAt: Date.now(), frame: null
-    });
-    onDisconnect(presRef).remove();
-
-    // Start camera
-    await startCamera(name, sessionId);
-  } catch (e) {
-    setLoc('error', ICONS.err, 'Gagal menghantar', e.message);
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('btnInner').innerHTML = 'Hantar & Aktif Camera';
-  }
-};
-
-// ── Camera ────────────────────────────────────────
-async function startCamera(name, sid) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } },
-      audio: false
-    });
-    camStream = stream;
-    const video = document.getElementById('camVideo');
-    video.srcObject = stream;
-    await video.play();
-
-    // Show stream view
-    document.getElementById('formView').style.display = 'none';
-    const sv = document.getElementById('streamView');
-    sv.classList.add('show');
-    document.getElementById('streamName').textContent = name;
-    document.getElementById('sCoord').textContent     = `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
-    document.getElementById('sTime').textContent      = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-
-    // Canvas for capturing frames
-    const canvas  = document.createElement('canvas');
-    canvas.width  = 320; canvas.height = 240;
-    const ctx     = canvas.getContext('2d');
-    const presRef = ref(rtdb, `presence/${sid}`);
-
-    let lastFrame = 0;
-    const FPS_INTERVAL = 1000 / 8; // 8 fps — balance quality vs RTDB writes
-
-    function captureLoop() {
-      if (!camStream) return;
-      const now = Date.now();
-      if (now - lastFrame >= FPS_INTERVAL) {
-        lastFrame = now;
-        ctx.save();
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, -320, 0, 320, 240);
-        ctx.restore();
-        const frame = canvas.toDataURL('image/jpeg', 0.45);
-        set(presRef, {
-          name, sessionId: sid,
-          latitude: loc.latitude, longitude: loc.longitude,
-          online: true, frame, updatedAt: Date.now()
-        });
-        frameCount++;
-        document.getElementById('frameCount').textContent = `${frameCount} frames`;
-
-        // FPS calc
-        fpsCount++;
-        if (now - lastFpsTime >= 1000) {
-          document.getElementById('fpsLabel').textContent = `${fpsCount} fps`;
-          fpsCount = 0; lastFpsTime = now;
-        }
-      }
-      streamInterval = requestAnimationFrame(captureLoop);
-    }
-    captureLoop();
-
-  } catch (err) {
-    // Camera denied — still show stream view without video
-    document.getElementById('formView').style.display = 'none';
-    document.getElementById('streamView').classList.add('show');
-    document.getElementById('streamName').textContent = name;
-    document.getElementById('sCoord').textContent     = `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
-    document.getElementById('sTime').textContent      = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('camWrap').style.display  = 'none';
-    document.getElementById('camErrorBox').style.display = 'block';
-    document.getElementById('camErrorBox').textContent = 'Camera tidak dapat diakses. Check in berjaya disimpan tetapi video tidak tersedia.';
-  }
-}
-
-// ── Stop ──────────────────────────────────────────
-window.stopSession = async function () {
-  if (streamInterval) cancelAnimationFrame(streamInterval);
-  streamInterval = null;
-  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  if (sessionId) {
-    try { const r = ref(rtdb, `presence/${sessionId}`); await set(r, null); } catch {}
-  }
-  // Reset UI
-  sessionId = null; frameCount = 0; fpsCount = 0;
-  document.getElementById('streamView').classList.remove('show');
-  document.getElementById('streamView').style.display = 'none';
-  document.getElementById('formView').style.display = 'block';
-  document.getElementById('nameInp').value = '';
-  document.getElementById('btnInner').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hantar & Aktif Camera';
-  document.getElementById('camWrap').style.display = '';
-  document.getElementById('camErrorBox').style.display = 'none';
-  document.getElementById('frameCount').textContent = '0 frames';
-  document.getElementById('fpsLabel').textContent   = '— fps';
-  loc = null; detect();
-};
-
-// cleanup on tab close
-window.addEventListener('beforeunload', () => {
-  if (streamInterval) cancelAnimationFrame(streamInterval);
-  if (camStream) camStream.getTracks().forEach(t => t.stop());
-  if (sessionId) { try { set(ref(rtdb, `presence/${sessionId}`), null); } catch {} }
 });
 
-document.getElementById('nameInp').addEventListener('keydown', e => { if (e.key === 'Enter') window.doSubmit(); });
-detect();
+adminPeer.on('open', id => console.log('Admin peer ready:', id));
+adminPeer.on('error', e => console.error('Admin peer error:', e));
+
+// active sessions: peerId -> { data, call, videoEl }
+const sessions = {};
+
+window.switchTab = function (t) {
+  ['cam','rec'].forEach(n => {
+    document.getElementById(`tab-${n}`).classList.toggle('active', n===t);
+    document.getElementById(`content-${n}`).classList.toggle('show', n===t);
+  });
+};
+
+// ── Camera Sessions Listener ──────────────────
+onSnapshot(query(collection(db, 'cam_sessions'), where('active', '==', true)), snap => {
+  snap.docChanges().forEach(change => {
+    const id   = change.doc.id;
+    const data = { id, ...change.doc.data() };
+
+    if (change.type === 'removed') {
+      removeCard(id);
+    } else if (change.type === 'added') {
+      addCard(id, data);
+      callPeer(id, data);
+    } else {
+      // modified — update info only
+      updateCardInfo(id, data);
+    }
+  });
+
+  document.getElementById('s3').textContent = Object.keys(sessions).length;
+  checkEmpty();
+});
+
+function addCard(id, data) {
+  sessions[id] = { data, call: null, videoEl: null };
+  const grid  = document.getElementById('camGrid');
+  const empty = grid.querySelector('.cam-empty');
+  if (empty) empty.remove();
+
+  const card = document.createElement('div');
+  card.className = 'cam-card'; card.id = `card-${id}`;
+  card.innerHTML = buildCardHTML(id, data, 'connecting');
+  grid.appendChild(card);
+}
+
+function buildCardHTML(id, data, state) {
+  const lat   = data.latitude  ? data.latitude.toFixed(5)  : '—';
+  const lng   = data.longitude ? data.longitude.toFixed(5) : '—';
+  const since = data.startedAt ? timeSince(new Date(data.startedAt.seconds * 1000)) : '—';
+  const stateLabel = state === 'connecting' ? 'Menyambung...' : state === 'live' ? 'Live' : state === 'nocam' ? 'Tiada Camera' : 'Ralat';
+  const stateClass = state === 'connecting' ? 'state-connecting' : state === 'live' ? 'state-live' : state === 'nocam' ? 'state-nocam' : 'state-error';
+
+  const videoArea = state === 'live'
+    ? `<video id="vid-${id}" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>`
+    : `<div class="cam-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        ${state === 'connecting' ? '<div class="dot-anim"><span></span><span></span><span></span></div>' : `<p>${stateLabel}</p>`}
+      </div>`;
+
+  return `
+    <div class="cam-video-wrap">
+      ${videoArea}
+      <div class="cam-overlay-tl"><div class="rec-dot"></div><span>LIVE</span></div>
+      <div class="cam-conn-state ${stateClass}" id="state-${id}">${stateLabel}</div>
+    </div>
+    <div class="cam-info">
+      <div class="cam-name">${esc(data.name)}</div>
+      <div class="cam-meta">
+        <div><div class="cm-label">Latitude</div><div class="cm-val" id="lat-${id}">${lat}</div></div>
+        <div><div class="cm-label">Longitude</div><div class="cm-val" id="lng-${id}">${lng}</div></div>
+        <div><div class="cm-label">Mula</div><div class="cm-val">${since}</div></div>
+        <div><div class="cm-label">Camera</div><div class="cm-val">${data.hasCamera ? '✓ Ada' : '✗ Tiada'}</div></div>
+      </div>
+    </div>
+    <div class="cam-foot">
+      <button class="cf-btn cf-call" id="callbtn-${id}" onclick="retryCall('${id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Sambung Semula
+      </button>
+      <button class="cf-btn cf-map" onclick="showMap(${data.latitude},${data.longitude},'${esc(data.name)}');switchTab('rec')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        Lokasi
+      </button>
+    </div>`;
+}
+
+function callPeer(id, data) {
+  if (!data.hasCamera) {
+    setCardState(id, 'nocam'); return;
+  }
+  if (!adminPeer || adminPeer.destroyed) return;
+
+  setCardState(id, 'connecting');
+  toast('info', `Menyambung ke ${data.name}...`);
+
+  const call = adminPeer.call(id, null);
+  if (!call) { setCardState(id, 'error'); return; }
+
+  if (sessions[id]) sessions[id].call = call;
+
+  call.on('stream', remoteStream => {
+    setCardState(id, 'live');
+    // Inject video element
+    const wrap = document.querySelector(`#card-${id} .cam-video-wrap`);
+    if (!wrap) return;
+    let vid = document.getElementById(`vid-${id}`);
+    if (!vid) {
+      const placeholder = wrap.querySelector('.cam-placeholder');
+      if (placeholder) placeholder.remove();
+      vid = document.createElement('video');
+      vid.id = `vid-${id}`;
+      vid.autoplay = true; vid.playsInline = true;
+      vid.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      wrap.insertBefore(vid, wrap.firstChild);
+    }
+    vid.srcObject = remoteStream;
+    if (sessions[id]) sessions[id].videoEl = vid;
+    toast('ok', `${data.name} — camera disambung`);
+  });
+
+  call.on('close', () => { setCardState(id, 'error'); });
+  call.on('error', e => { console.error('call error', e); setCardState(id, 'error'); });
+}
+
+window.retryCall = function (id) {
+  const s = sessions[id];
+  if (!s) return;
+  if (s.call) { s.call.close(); s.call = null; }
+  const vid = document.getElementById(`vid-${id}`);
+  if (vid) vid.remove();
+  callPeer(id, s.data);
+};
+
+function setCardState(id, state) {
+  const el = document.getElementById(`state-${id}`);
+  if (!el) return;
+  const labels = { connecting: 'Menyambung...', live: 'Live', error: 'Terputus', nocam: 'Tiada Camera' };
+  const classes = { connecting: 'state-connecting', live: 'state-live', error: 'state-error', nocam: 'state-nocam' };
+  el.textContent = labels[state] || state;
+  el.className   = `cam-conn-state ${classes[state] || ''}`;
+}
+
+function updateCardInfo(id, data) {
+  if (sessions[id]) sessions[id].data = data;
+  const latEl = document.getElementById(`lat-${id}`);
+  const lngEl = document.getElementById(`lng-${id}`);
+  if (latEl && data.latitude)  latEl.textContent = data.latitude.toFixed(5);
+  if (lngEl && data.longitude) lngEl.textContent = data.longitude.toFixed(5);
+}
+
+function removeCard(id) {
+  const s = sessions[id];
+  if (s) { if (s.call) s.call.close(); delete sessions[id]; }
+  const card = document.getElementById(`card-${id}`);
+  if (card) { card.style.opacity = '0'; card.style.transition = 'opacity 0.3s'; setTimeout(() => card.remove(), 300); }
+  document.getElementById('s3').textContent = Object.keys(sessions).length;
+}
+
+function checkEmpty() {
+  const grid = document.getElementById('camGrid');
+  if (!grid.children.length || (grid.children.length === 1 && grid.querySelector('.cam-empty'))) {
+    if (!grid.querySelector('.cam-empty')) {
+      grid.innerHTML = `<div class="cam-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <h3>Tiada pengguna aktif</h3><p>Apabila seseorang buka halaman check in,<br>feed live akan muncul di sini.</p>
+      </div>`;
+    }
+  }
+}
+
+// ── Records Listener ──────────────────────────
+let records = [], curLat = null, curLng = null, firstLoad = true, newCount = 0;
+
+onSnapshot(query(collection(db, 'locations'), orderBy('timestamp', 'desc')),
+  snap => {
+    document.getElementById('connDot').className   = 'conn-dot on';
+    document.getElementById('connText').textContent = 'Bersambung';
+    document.getElementById('connText').className   = 'conn-text on';
+    const added = [];
+    snap.docChanges().forEach(c => { if (c.type==='added' && !firstLoad) { added.push(c.doc); newCount++; } });
+    records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!firstLoad && added.length) { added.forEach(d => { prependFeed(d.data()); toast('ok', `${d.data().name} check in`); }); document.getElementById('feedChip').textContent = `${newCount} baru`; }
+    if (firstLoad) { const fb = document.getElementById('feedBody'); fb.innerHTML = ''; if (records.length) records.slice(0,15).forEach(r => appendFeed(r)); else fb.innerHTML = '<div class="feed-empty">Belum ada check in.</div>'; firstLoad = false; }
+    renderTable(); updateStats();
+  },
+  err => { document.getElementById('connDot').className = 'conn-dot err'; document.getElementById('connText').textContent = 'Ralat'; document.getElementById('connText').className = 'conn-text err'; }
+);
+
+function mkFeedEl(data, isNew) {
+  const t = data.timestamp ? new Date(data.timestamp.seconds*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const d = document.createElement('div'); d.className = 'feed-item';
+  d.innerHTML = `<div class="feed-av">${ini(data.name)}</div><div style="flex:1;min-width:0"><div class="feed-name">${esc(data.name)} ${isNew?'<span class="new-tag">Baru</span>':''}</div><div class="feed-coord">${(data.latitude||0).toFixed(4)}, ${(data.longitude||0).toFixed(4)}</div></div><div class="feed-time">${t}</div>`;
+  d.onclick = () => showMap(data.latitude, data.longitude, data.name);
+  return d;
+}
+function prependFeed(data) { const fb=document.getElementById('feedBody'); const em=fb.querySelector('.feed-empty'); if(em) em.remove(); fb.insertBefore(mkFeedEl(data,true),fb.firstChild); }
+function appendFeed(data)  { document.getElementById('feedBody').appendChild(mkFeedEl(data,false)); }
+
+window.renderTable = function () {
+  const sq = document.getElementById('searchInp').value.toLowerCase();
+  const f  = records.filter(r => (r.name||'').toLowerCase().includes(sq));
+  const tb = document.getElementById('tableBody');
+  if (!f.length) { tb.innerHTML = `<tr><td colspan="7"><div class="empty-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>${records.length===0?'Belum ada rekod.':'Tiada rekod sepadan.'}</div></td></tr>`; return; }
+  tb.innerHTML = f.map((r,i) => {
+    const ts=r.timestamp?new Date(r.timestamp.seconds*1000):null;
+    const tStr=ts?ts.toLocaleDateString('ms-MY',{day:'2-digit',month:'short'})+' '+ts.toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}):'—';
+    const ac=r.accuracy<20?'acc-good':r.accuracy<100?'acc-mid':'acc-bad';
+    const src=r.source==='checkin'?'<span class="src-tag src-ci">Check In</span>':'<span class="src-tag src-web">Web</span>';
+    const isN=ts&&Date.now()-ts.getTime()<300000;
+    return `<tr class="${isN?'tr-new':''}"><td class="td-num">${String(i+1).padStart(2,'0')}</td><td><div class="td-name"><div class="td-av">${ini(r.name)}</div>${esc(r.name)}</div></td><td class="td-coord">${(r.latitude||0).toFixed(5)}, ${(r.longitude||0).toFixed(5)}</td><td class="td-coord ${ac}">±${Math.round(r.accuracy||0)}m</td><td>${src}</td><td class="td-time">${tStr}</td><td><div class="acts"><button class="act act-map" onclick="showMap(${r.latitude},${r.longitude},'${esc(r.name)}');switchTab('rec')">Peta</button><button class="act act-del" onclick="delRec('${r.id}','${esc(r.name)}')">Padam</button></div></td></tr>`;
+  }).join('');
+};
+
+function updateStats() {
+  const today=new Date().toDateString(),h1=Date.now()-3600000;
+  document.getElementById('s1').textContent=records.length;
+  document.getElementById('s2').textContent=records.filter(r=>r.timestamp&&new Date(r.timestamp.seconds*1000).toDateString()===today).length;
+  document.getElementById('s4').textContent=records.filter(r=>r.timestamp&&r.timestamp.seconds*1000>h1).length;
+  document.getElementById('totalChip').textContent=`${records.length} rekod`;
+}
+
+window.showMap = function (lat,lng,name) {
+  curLat=lat; curLng=lng;
+  document.getElementById('mapFrame').src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-.008},${lat-.008},${lng+.008},${lat+.008}&layer=mapnik&marker=${lat},${lng}`;
+  document.getElementById('mapFrame').style.display='block';
+  document.getElementById('mapEmpty').style.display='none';
+  document.getElementById('mapLabel').textContent=name||'—';
+  document.getElementById('mapCoord').textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  toast('info',`Lokasi ${name||''}`);
+};
+window.openGmaps = function () { if(!curLat){toast('info','Pilih rekod dahulu');return;} window.open(`https://www.google.com/maps?q=${curLat},${curLng}`,'_blank'); };
+window.delRec   = async function (id,name) { if(!confirm(`Padam "${name}"?`))return; try{await deleteDoc(doc(db,'locations',id));toast('ok','Rekod dipadam');}catch(e){toast('err',e.message);} };
+window.clearAll = async function () { if(!records.length){toast('info','Tiada rekod');return;} if(!confirm(`Padam semua ${records.length} rekod?`))return; try{const b=writeBatch(db);records.forEach(r=>b.delete(doc(db,'locations',r.id)));await b.commit();toast('ok','Semua rekod dipadam');}catch(e){toast('err',e.message);} };
+window.exportCSV  = function(){if(!records.length){toast('info','Tiada data');return;}dl('geotrack.csv','Nama,Latitude,Longitude,Accuracy,Sumber,Masa\n'+records.map(r=>{const ts=r.timestamp?new Date(r.timestamp.seconds*1000).toISOString():'';return`"${r.name}",${r.latitude},${r.longitude},${Math.round(r.accuracy||0)},"${r.source||''}","${ts}"`;}).join('\n'),'text/csv');toast('ok',`${records.length} rekod dieksport`);};
+window.exportJSON = function(){if(!records.length){toast('info','Tiada data');return;}dl('geotrack.json',JSON.stringify(records.map(r=>({...r,timestamp:r.timestamp?new Date(r.timestamp.seconds*1000).toISOString():null})),null,2),'application/json');toast('ok',`${records.length} rekod dieksport`);};
+
+function dl(n,c,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:m}));a.download=n;a.click();}
+function ini(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function timeSince(d){const s=Math.floor((Date.now()-d.getTime())/1000);if(s<60)return`${s}s`;if(s<3600)return`${Math.floor(s/60)}m`;return`${Math.floor(s/3600)}j`;}
+function toast(type,msg){const w=document.getElementById('toastWrap');const el=document.createElement('div');el.className=`toast ${type}`;el.innerHTML=`<div class="t-dot"></div><span>${msg}</span>`;w.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.2s';setTimeout(()=>el.remove(),200);},3500);}
 </script>
 </body>
 </html>
