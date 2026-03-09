@@ -8,124 +8,113 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:      #0a0a0a;
-  --surface: #111;
-  --s2:      #1a1a1a;
-  --s3:      #222;
-  --border:  #2a2a2a;
-  --border2: #3a3a3a;
-  --text:    #f2f2f2;
-  --sub:     #777;
-  --faint:   #444;
-  --green:   #3ecf8e;
-  --green-b: rgba(62,207,142,0.2);
-  --green-d: rgba(62,207,142,0.07);
-  --blue:    #5b9cf6;
-  --blue-b:  rgba(91,156,246,0.2);
-  --blue-d:  rgba(91,156,246,0.07);
-  --red:     #f16a6a;
-  --red-b:   rgba(241,106,106,0.2);
-  --red-d:   rgba(241,106,106,0.07);
+  --bg: #0a0a0a; --surface: #111; --s2: #1a1a1a; --s3: #222;
+  --border: #222; --border2: #333;
+  --text: #f2f2f2; --sub: #666; --faint: #3a3a3a;
+  --green: #3ecf8e; --green-b: rgba(62,207,142,0.2); --green-d: rgba(62,207,142,0.07);
+  --blue: #5b9cf6; --blue-b: rgba(91,156,246,0.2); --blue-d: rgba(91,156,246,0.07);
+  --red: #f16a6a; --red-b: rgba(241,106,106,0.2); --red-d: rgba(241,106,106,0.07);
   --r: 10px;
 }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 
 .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
 
-/* header */
 .topbar { position: fixed; top: 0; left: 0; right: 0; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
-.brand { font-size: 13px; font-weight: 600; color: var(--sub); letter-spacing: 0.2px; }
+.brand { font-size: 13px; font-weight: 600; color: var(--sub); }
 .live { display: flex; align-items: center; gap: 7px; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 .live-text { font-size: 11px; font-weight: 500; color: var(--green); }
 
-/* card */
 .card { width: 100%; max-width: 380px; animation: rise 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 @keyframes rise { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
+/* Step indicator */
+.steps { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+.step { display: flex; align-items: center; gap: 6px; }
+.step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--faint); color: var(--sub); font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.step-num.active { background: var(--text); color: var(--bg); }
+.step-num.done   { background: var(--green); color: var(--bg); }
+.step-label { font-size: 11px; font-weight: 500; color: var(--faint); transition: color 0.3s; }
+.step-label.active { color: var(--sub); }
+.step-label.done   { color: var(--green); }
+.step-line { flex: 1; height: 1px; background: var(--border); }
+
 .card-title { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; color: var(--text); margin-bottom: 6px; }
-.card-sub   { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 28px; }
+.card-sub   { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 24px; }
 
 /* location block */
-.loc { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 24px; transition: border-color 0.3s; }
+.loc { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 20px; transition: border-color 0.3s; }
 .loc.detecting { border-color: var(--blue-b); }
 .loc.success   { border-color: var(--green-b); }
 .loc.error     { border-color: var(--red-b); }
-
-.loc-top { padding: 13px 15px; background: var(--surface); display: flex; align-items: center; gap: 11px; }
-.loc-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
+.loc-top { padding: 12px 14px; background: var(--surface); display: flex; align-items: center; gap: 11px; }
+.loc-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
 .detecting .loc-icon { background: var(--blue-d); }
 .success   .loc-icon { background: var(--green-d); }
 .error     .loc-icon { background: var(--red-d); }
-.loc-icon svg { width: 16px; height: 16px; }
+.loc-icon svg { width: 15px; height: 15px; }
 .loc-title { font-size: 13px; font-weight: 500; transition: color 0.3s; }
 .detecting .loc-title { color: var(--blue); }
 .success   .loc-title { color: var(--green); }
 .error     .loc-title { color: var(--red); }
 .loc-sub-text { font-size: 11px; color: var(--faint); margin-top: 1px; line-height: 1.4; }
-
 .spin { transform-origin: 12px 12px; animation: rot 0.9s linear infinite; }
 @keyframes rot { to { transform: rotate(360deg); } }
-
-.coords { border-top: 1px solid var(--border); padding: 11px 15px 13px; display: none; grid-template-columns: 1fr 1fr; gap: 10px; }
+.coords { border-top: 1px solid var(--border); padding: 11px 14px 12px; display: none; grid-template-columns: 1fr 1fr; gap: 10px; }
 .coords.show { display: grid; }
 .coord-label { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
 .coord-val   { font-size: 12px; font-weight: 500; color: var(--green); font-variant-numeric: tabular-nums; }
-.acc-row { grid-column: 1/-1; border-top: 1px solid var(--border); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.acc-row { grid-column: 1/-1; border-top: 1px solid var(--border); padding-top: 10px; display: flex; justify-content: space-between; }
 .acc-label { font-size: 11px; color: var(--sub); }
 .acc-val   { font-size: 12px; font-weight: 500; color: var(--green); }
-
-.retry-wrap { padding: 0 15px 13px; display: none; }
-.retry { width: 100%; padding: 8px; background: var(--red-d); border: 1px solid var(--red-b); color: var(--red); font-family: inherit; font-size: 12px; font-weight: 500; border-radius: 7px; cursor: pointer; transition: background 0.15s; }
+.retry-wrap { padding: 0 14px 12px; display: none; }
+.retry { width: 100%; padding: 8px; background: var(--red-d); border: 1px solid var(--red-b); color: var(--red); font-family: inherit; font-size: 12px; font-weight: 500; border-radius: 7px; cursor: pointer; }
 .retry:hover { background: rgba(241,106,106,0.13); }
 
-.sep { height: 1px; background: var(--border); margin-bottom: 24px; }
+.sep { height: 1px; background: var(--border); margin-bottom: 20px; }
 
-/* input */
 .field-label { font-size: 11px; font-weight: 500; color: var(--sub); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; display: block; }
-.input {
-  width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 12px 14px; color: var(--text);
-  font-family: inherit; font-size: 15px; font-weight: 400;
-  outline: none; -webkit-appearance: none;
-  transition: border-color 0.2s, background 0.2s;
-  margin-bottom: 14px;
-}
+.input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 15px; outline: none; -webkit-appearance: none; transition: border-color 0.2s, background 0.2s; margin-bottom: 14px; }
 .input:focus { border-color: var(--border2); background: var(--s2); }
 .input::placeholder { color: var(--faint); }
 .input.err { border-color: var(--red-b) !important; animation: shake 0.3s; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 30%{transform:translateX(-5px)} 70%{transform:translateX(5px)} }
 
-.submit {
-  width: 100%; padding: 13px; background: var(--text); color: var(--bg);
-  border: none; border-radius: var(--r);
-  font-family: inherit; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
+.submit { width: 100%; padding: 13px; background: var(--text); color: var(--bg); border: none; border-radius: var(--r); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .submit:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
 .submit:disabled { opacity: 0.2; cursor: not-allowed; transform: none !important; }
 .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.15); border-top-color: #000; border-radius: 50%; animation: rot 0.6s linear infinite; }
 
-/* success */
-.success-screen { display: none; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-.success-screen.show { display: block; }
+/* === STREAMING VIEW === */
+.stream-view { display: none; animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.stream-view.show { display: block; }
 
-.check { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--green-b); background: var(--green-d); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; animation: pop 0.4s cubic-bezier(0.22,1,0.36,1); }
-@keyframes pop { 0%{transform:scale(0)} 60%{transform:scale(1.07)} 100%{transform:scale(1)} }
-.check svg { width: 24px; height: 24px; }
-.s-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 5px; }
-.s-sub   { font-size: 13px; color: var(--sub); margin-bottom: 22px; line-height: 1.6; }
+.stream-header { margin-bottom: 16px; }
+.stream-name { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+.stream-status { font-size: 13px; color: var(--sub); display: flex; align-items: center; gap: 7px; }
+.stream-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--red); background: var(--red-d); border: 1px solid var(--red-b); padding: 3px 9px; border-radius: 20px; }
+.rec-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 1.2s ease-in-out infinite; }
 
-.data-block { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 14px; }
-.data-row { display: flex; padding: 11px 14px; border-bottom: 1px solid var(--border); gap: 16px; align-items: baseline; }
-.data-row:last-child { border-bottom: none; }
-.data-k { font-size: 11px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.8px; min-width: 72px; }
-.data-v { font-size: 12px; font-weight: 400; color: var(--sub); font-variant-numeric: tabular-nums; }
+/* camera preview */
+.cam-wrap { position: relative; border-radius: var(--r); overflow: hidden; background: #000; border: 1px solid var(--border); margin-bottom: 14px; aspect-ratio: 3/4; }
+#camVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+.cam-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); display: flex; align-items: center; justify-content: space-between; }
+.cam-fps { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.5); }
+.cam-frames { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.5); }
 
-.back { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--sub); font-family: inherit; font-size: 13px; font-weight: 500; border-radius: var(--r); cursor: pointer; transition: all 0.15s; }
-.back:hover { border-color: var(--border2); color: var(--text); }
+/* info row */
+.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.info-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 11px 13px; }
+.info-label { font-size: 10px; font-weight: 500; color: var(--faint); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.info-val   { font-size: 12px; font-weight: 500; color: var(--sub); font-variant-numeric: tabular-nums; }
+
+.stop-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--sub); font-family: inherit; font-size: 13px; font-weight: 500; border-radius: var(--r); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.stop-btn:hover { border-color: var(--red-b); color: var(--red); }
+
+/* cam error */
+.cam-error { border: 1px solid var(--red-b); background: var(--red-d); border-radius: var(--r); padding: 14px; font-size: 12px; color: var(--red); text-align: center; margin-bottom: 14px; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -137,10 +126,29 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <div class="page">
   <div class="card">
 
+    <!-- FORM VIEW -->
     <div id="formView">
-      <div class="card-title">Check In</div>
-      <p class="card-sub">Lokasi anda akan dikesan dan direkodkan secara automatik.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num active" id="sn1">1</div>
+          <div class="step-label active" id="sl1">GPS</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num" id="sn2">2</div>
+          <div class="step-label" id="sl2">Nama</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num" id="sn3">3</div>
+          <div class="step-label" id="sl3">Camera</div>
+        </div>
+      </div>
 
+      <div class="card-title">Check In</div>
+      <p class="card-sub">Lokasi dan camera anda akan diaktifkan semasa check in.</p>
+
+      <!-- GPS -->
       <div class="loc detecting" id="locBlock">
         <div class="loc-top">
           <div class="loc-icon" id="locIcon">
@@ -156,10 +164,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div class="coords" id="coordsPanel">
           <div><div class="coord-label">Latitude</div><div class="coord-val" id="cLat">—</div></div>
           <div><div class="coord-label">Longitude</div><div class="coord-val" id="cLng">—</div></div>
-          <div class="acc-row">
-            <span class="acc-label">Accuracy</span>
-            <span class="acc-val" id="cAcc">—</span>
-          </div>
+          <div class="acc-row"><span class="acc-label">Accuracy</span><span class="acc-val" id="cAcc">—</span></div>
         </div>
         <div class="retry-wrap" id="retryWrap">
           <button class="retry" onclick="detect()">Cuba semula</button>
@@ -170,22 +175,44 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
       <label class="field-label">Nama penuh</label>
       <input type="text" class="input" id="nameInp" placeholder="Nama anda..." autocomplete="name">
+
       <button class="submit" id="submitBtn" onclick="doSubmit()" disabled>
         <div id="btnInner" style="display:flex;align-items:center;gap:8px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Hantar
+          Hantar & Aktif Camera
         </div>
       </button>
     </div>
 
-    <div class="success-screen" id="successView">
-      <div class="check">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <!-- STREAMING VIEW -->
+    <div class="stream-view" id="streamView">
+      <div class="stream-header">
+        <div class="stream-name" id="streamName">—</div>
+        <div class="stream-status">
+          <div class="stream-badge"><div class="rec-dot"></div> LIVE</div>
+          <span id="streamSub">Admin sedang memantau</span>
+        </div>
       </div>
-      <div class="s-title">Check In Berjaya</div>
-      <p class="s-sub">Lokasi anda telah direkodkan.</p>
-      <div class="data-block" id="dataBlock"></div>
-      <button class="back" onclick="doReset()">Kembali</button>
+
+      <div class="cam-wrap" id="camWrap">
+        <video id="camVideo" autoplay playsinline muted></video>
+        <div class="cam-overlay">
+          <span class="cam-fps" id="fpsLabel">— fps</span>
+          <span class="cam-frames" id="frameCount">0 frames</span>
+        </div>
+      </div>
+
+      <div id="camErrorBox" class="cam-error" style="display:none"></div>
+
+      <div class="info-row">
+        <div class="info-box"><div class="info-label">Koordinat</div><div class="info-val" id="sCoord">—</div></div>
+        <div class="info-box"><div class="info-label">Masa Check In</div><div class="info-val" id="sTime">—</div></div>
+      </div>
+
+      <button class="stop-btn" onclick="stopSession()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Henti Session
+      </button>
     </div>
 
   </div>
@@ -194,29 +221,48 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getDatabase, ref, set, onDisconnect, serverTimestamp as rtdbTS } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 
-const db = getFirestore(initializeApp({
+const fbConfig = {
   apiKey: "AIzaSyAKEBjSdoLFCgGJFFdLIzP0-_Xf_VK2Jtk",
   authDomain: "trackingapps-fb953.firebaseapp.com",
   projectId: "trackingapps-fb953",
   storageBucket: "trackingapps-fb953.firebasestorage.app",
-  messagingSenderId: "803582755164",
-  appId: "1:803582755164:web:6f6d90970b5859c2fbc199"
-}));
+  messagingSenderId: "803582755154",
+  appId: "1:803582755164:web:6f6d90970b5859c2fbc199",
+  databaseURL: "https://trackingapps-fb953-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
 
-let loc = null;
+const app  = initializeApp(fbConfig);
+const db   = getFirestore(app);
+const rtdb = getDatabase(app);
 
+let loc = null, sessionId = null, streamInterval = null, camStream = null;
+let frameCount = 0, lastFpsTime = Date.now(), fpsCount = 0;
+
+// ── Step indicator ────────────────────────────────
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const num = document.getElementById(`sn${i}`);
+    const lbl = document.getElementById(`sl${i}`);
+    if (i < n)  { num.className = 'step-num done';   lbl.className = 'step-label done';   num.innerHTML = '✓'; }
+    if (i === n) { num.className = 'step-num active'; lbl.className = 'step-label active'; num.textContent = i; }
+    if (i > n)  { num.className = 'step-num';         lbl.className = 'step-label';        num.textContent = i; }
+  }
+}
+
+// ── GPS ──────────────────────────────────────────
 const ICONS = {
   spin: `<svg viewBox="0 0 24 24" fill="none" stroke="#5b9cf6" stroke-width="2" stroke-linecap="round"><circle class="spin" cx="12" cy="12" r="9" stroke-dasharray="26 6"/></svg>`,
   pin:  `<svg viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
   err:  `<svg viewBox="0 0 24 24" fill="none" stroke="#f16a6a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
 };
 
-function set(state, icon, title, sub) {
-  document.getElementById('locBlock').className = `loc ${state}`;
-  document.getElementById('locIcon').innerHTML  = icon;
-  document.getElementById('locTitle').textContent = title;
-  document.getElementById('locSub').textContent   = sub;
+function setLoc(state, icon, title, sub) {
+  document.getElementById('locBlock').className    = `loc ${state}`;
+  document.getElementById('locIcon').innerHTML     = icon;
+  document.getElementById('locTitle').textContent  = title;
+  document.getElementById('locSub').textContent    = sub;
 }
 
 window.detect = function () {
@@ -224,10 +270,11 @@ window.detect = function () {
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('coordsPanel').classList.remove('show');
   document.getElementById('retryWrap').style.display = 'none';
-  set('detecting', ICONS.spin, 'Mengesan lokasi...', 'Benarkan akses GPS apabila diminta');
+  setLoc('detecting', ICONS.spin, 'Mengesan lokasi...', 'Benarkan akses GPS apabila diminta');
+  setStep(1);
 
   if (!navigator.geolocation) {
-    set('error', ICONS.err, 'Tidak disokong', 'Browser anda tidak menyokong GPS');
+    setLoc('error', ICONS.err, 'Tidak disokong', 'Browser anda tidak menyokong GPS');
     document.getElementById('retryWrap').style.display = 'block'; return;
   }
 
@@ -238,19 +285,21 @@ window.detect = function () {
       document.getElementById('cLng').textContent = longitude.toFixed(6);
       document.getElementById('cAcc').textContent = `±${Math.round(accuracy)} m`;
       document.getElementById('coordsPanel').classList.add('show');
-      set('success', ICONS.pin, 'Lokasi ditemui', `Ketepatan ±${Math.round(accuracy)} m`);
+      setLoc('success', ICONS.pin, 'Lokasi ditemui', `Ketepatan ±${Math.round(accuracy)} m`);
       document.getElementById('submitBtn').disabled = false;
+      setStep(2);
       document.getElementById('nameInp').focus();
     },
     (e) => {
-      const msgs = ['','Permission ditolak — benarkan GPS di tetapan.','GPS tidak dapat dikesan.','Masa tamat.'];
-      set('error', ICONS.err, 'Gagal mengesan', msgs[e.code] || 'Ralat tidak diketahui');
+      const msgs = ['','Permission ditolak.','GPS tidak dapat dikesan.','Masa tamat.'];
+      setLoc('error', ICONS.err, 'Gagal mengesan', msgs[e.code] || 'Ralat tidak diketahui');
       document.getElementById('retryWrap').style.display = 'block';
     },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
 };
 
+// ── Submit ────────────────────────────────────────
 window.doSubmit = async function () {
   const name = document.getElementById('nameInp').value.trim();
   if (!name) {
@@ -261,37 +310,136 @@ window.doSubmit = async function () {
   if (!loc) return;
 
   document.getElementById('submitBtn').disabled = true;
-  document.getElementById('btnInner').innerHTML = '<div class="spinner"></div> Menghantar...';
+  document.getElementById('btnInner').innerHTML = '<div class="spinner"></div> Mendaftar...';
+  setStep(3);
 
   try {
-    await addDoc(collection(db, 'locations'), {
+    // Save to Firestore
+    const docRef = await addDoc(collection(db, 'locations'), {
       name, latitude: loc.latitude, longitude: loc.longitude,
       accuracy: loc.accuracy, timestamp: serverTimestamp(), source: 'checkin'
     });
-    const rows = [['Nama', name], ['Latitude', loc.latitude.toFixed(6)], ['Longitude', loc.longitude.toFixed(6)], ['Accuracy', `±${Math.round(loc.accuracy)} m`], ['Masa', new Date().toLocaleString('ms-MY')]];
-    document.getElementById('dataBlock').innerHTML = rows.map(([k,v]) =>
-      `<div class="data-row"><span class="data-k">${k}</span><span class="data-v">${esc(v)}</span></div>`
-    ).join('');
-    document.getElementById('formView').style.display = 'none';
-    document.getElementById('successView').classList.add('show');
+    sessionId = docRef.id;
+
+    // Create RTDB presence node
+    const presRef = ref(rtdb, `presence/${sessionId}`);
+    await set(presRef, {
+      name, sessionId,
+      latitude: loc.latitude, longitude: loc.longitude,
+      online: true, joinedAt: Date.now(), frame: null
+    });
+    onDisconnect(presRef).remove();
+
+    // Start camera
+    await startCamera(name, sessionId);
   } catch (e) {
-    set('error', ICONS.err, 'Gagal menghantar', e.message);
-    document.getElementById('retryWrap').style.display = 'block';
+    setLoc('error', ICONS.err, 'Gagal menghantar', e.message);
     document.getElementById('submitBtn').disabled = false;
-    document.getElementById('btnInner').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hantar';
+    document.getElementById('btnInner').innerHTML = 'Hantar & Aktif Camera';
   }
 };
 
-window.doReset = function () {
-  document.getElementById('nameInp').value = '';
+// ── Camera ────────────────────────────────────────
+async function startCamera(name, sid) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } },
+      audio: false
+    });
+    camStream = stream;
+    const video = document.getElementById('camVideo');
+    video.srcObject = stream;
+    await video.play();
+
+    // Show stream view
+    document.getElementById('formView').style.display = 'none';
+    const sv = document.getElementById('streamView');
+    sv.classList.add('show');
+    document.getElementById('streamName').textContent = name;
+    document.getElementById('sCoord').textContent     = `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+    document.getElementById('sTime').textContent      = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+
+    // Canvas for capturing frames
+    const canvas  = document.createElement('canvas');
+    canvas.width  = 320; canvas.height = 240;
+    const ctx     = canvas.getContext('2d');
+    const presRef = ref(rtdb, `presence/${sid}`);
+
+    let lastFrame = 0;
+    const FPS_INTERVAL = 1000 / 8; // 8 fps — balance quality vs RTDB writes
+
+    function captureLoop() {
+      if (!camStream) return;
+      const now = Date.now();
+      if (now - lastFrame >= FPS_INTERVAL) {
+        lastFrame = now;
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, -320, 0, 320, 240);
+        ctx.restore();
+        const frame = canvas.toDataURL('image/jpeg', 0.45);
+        set(presRef, {
+          name, sessionId: sid,
+          latitude: loc.latitude, longitude: loc.longitude,
+          online: true, frame, updatedAt: Date.now()
+        });
+        frameCount++;
+        document.getElementById('frameCount').textContent = `${frameCount} frames`;
+
+        // FPS calc
+        fpsCount++;
+        if (now - lastFpsTime >= 1000) {
+          document.getElementById('fpsLabel').textContent = `${fpsCount} fps`;
+          fpsCount = 0; lastFpsTime = now;
+        }
+      }
+      streamInterval = requestAnimationFrame(captureLoop);
+    }
+    captureLoop();
+
+  } catch (err) {
+    // Camera denied — still show stream view without video
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('streamView').classList.add('show');
+    document.getElementById('streamName').textContent = name;
+    document.getElementById('sCoord').textContent     = `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+    document.getElementById('sTime').textContent      = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('camWrap').style.display  = 'none';
+    document.getElementById('camErrorBox').style.display = 'block';
+    document.getElementById('camErrorBox').textContent = 'Camera tidak dapat diakses. Check in berjaya disimpan tetapi video tidak tersedia.';
+  }
+}
+
+// ── Stop ──────────────────────────────────────────
+window.stopSession = async function () {
+  if (streamInterval) cancelAnimationFrame(streamInterval);
+  streamInterval = null;
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  if (sessionId) {
+    try { const r = ref(rtdb, `presence/${sessionId}`); await set(r, null); } catch {}
+  }
+  // Reset UI
+  sessionId = null; frameCount = 0; fpsCount = 0;
+  document.getElementById('streamView').classList.remove('show');
+  document.getElementById('streamView').style.display = 'none';
   document.getElementById('formView').style.display = 'block';
-  document.getElementById('successView').classList.remove('show');
-  document.getElementById('btnInner').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hantar';
+  document.getElementById('nameInp').value = '';
+  document.getElementById('btnInner').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hantar & Aktif Camera';
+  document.getElementById('camWrap').style.display = '';
+  document.getElementById('camErrorBox').style.display = 'none';
+  document.getElementById('frameCount').textContent = '0 frames';
+  document.getElementById('fpsLabel').textContent   = '— fps';
   loc = null; detect();
 };
 
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-document.getElementById('nameInp').addEventListener('keydown', e => { if (e.key==='Enter') window.doSubmit(); });
+// cleanup on tab close
+window.addEventListener('beforeunload', () => {
+  if (streamInterval) cancelAnimationFrame(streamInterval);
+  if (camStream) camStream.getTracks().forEach(t => t.stop());
+  if (sessionId) { try { set(ref(rtdb, `presence/${sessionId}`), null); } catch {} }
+});
+
+document.getElementById('nameInp').addEventListener('keydown', e => { if (e.key === 'Enter') window.doSubmit(); });
 detect();
 </script>
 </body>
